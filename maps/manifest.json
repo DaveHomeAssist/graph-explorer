@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "maps": [
+    {
+      "id": "notion-workspace",
+      "title": "Notion Workspace",
+      "description": "Workspace structure, databases, and project hubs"
+    },
+    {
+      "id": "software-architecture",
+      "title": "Software Architecture",
+      "description": "Services, infra, AI providers, and dependencies"
+    },
+    {
+      "id": "ai-system",
+      "title": "AI System Pipeline",
+      "description": "Prompt routing, evaluation, and response pipeline"
+    },
+    {
+      "id": "garden-os",
+      "title": "Garden OS Topology",
+      "description": "Browser-native horticultural reasoning engine architecture"
+    }
+  ]
+}
