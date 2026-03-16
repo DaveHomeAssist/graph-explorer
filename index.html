@@ -271,6 +271,16 @@
       html:not([data-theme]) .path-bar .path-chip { background: rgba(79,70,229,0.08); border-color: rgba(79,70,229,0.2); }
       html:not([data-theme]) .path-bar .path-chip.source { border-color: rgba(5,150,105,0.3); color: #059669; }
       html:not([data-theme]) .path-bar .path-chip.target { border-color: rgba(217,119,6,0.3); color: #d97706; }
+      /* Light mode fixes — contrast and visibility */
+      html:not([data-theme]) .eyebrow { background: rgba(79,70,229,0.08); color: #4338ca; }
+      html:not([data-theme]) .chip { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); color: var(--text); }
+      html:not([data-theme]) .d-kicker { color: #4338ca; }
+      html:not([data-theme]) .notion-link { color: #4338ca; }
+      html:not([data-theme]) .d-list li span { color: rgba(0,0,0,0.45); }
+      html:not([data-theme]) .detail::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); }
+      html:not([data-theme]) .node.dimmed { opacity: 0.18 !important; }
+      html:not([data-theme]) .seg button.active,
+      html:not([data-theme]) .seg button:hover { background: rgba(79,70,229,0.1); }
     }
 
     html[data-theme='light'] {
@@ -306,6 +316,16 @@
     html[data-theme='light'] .path-bar .path-chip { background: rgba(79,70,229,0.08); border-color: rgba(79,70,229,0.2); }
     html[data-theme='light'] .path-bar .path-chip.source { border-color: rgba(5,150,105,0.3); color: #059669; }
     html[data-theme='light'] .path-bar .path-chip.target { border-color: rgba(217,119,6,0.3); color: #d97706; }
+    /* Light mode fixes — contrast and visibility */
+    html[data-theme='light'] .eyebrow { background: rgba(79,70,229,0.08); color: #4338ca; }
+    html[data-theme='light'] .chip { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); color: var(--text); }
+    html[data-theme='light'] .d-kicker { color: #4338ca; }
+    html[data-theme='light'] .notion-link { color: #4338ca; }
+    html[data-theme='light'] .d-list li span { color: rgba(0,0,0,0.45); }
+    html[data-theme='light'] .detail::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); }
+    html[data-theme='light'] .node.dimmed { opacity: 0.18 !important; }
+    html[data-theme='light'] .seg button.active,
+    html[data-theme='light'] .seg button:hover { background: rgba(79,70,229,0.1); }
   </style>
 </head>
 <body>
