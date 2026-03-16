@@ -326,6 +326,13 @@
     html[data-theme='light'] .node.dimmed { opacity: 0.18 !important; }
     html[data-theme='light'] .seg button.active,
     html[data-theme='light'] .seg button:hover { background: rgba(79,70,229,0.1); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1142,6 +1149,7 @@ function renderDetail(visIds) {
   const metaArrays = inspectorCfg.metaArrays || [];
   const metaChips = inspectorCfg.metaChips || [];
   const metaLink = inspectorCfg.metaLink;
+  const metaFieldsDef = inspectorCfg.metaFields || [];
 
   // Field cards — support custom ordering
   let orderedFields = fields;
@@ -1175,6 +1183,13 @@ function renderDetail(visIds) {
       <div class="d-kicker">${esc(key)}</div>
       <div class="chips" style="margin-top:6px">${items.map(t => `<span class="chip">#${esc(t)}</span>`).join('')}</div>
     </div>`;
+  }).filter(Boolean).join('');
+
+  // Meta fields — simple key-value pairs from node.meta
+  const metaFieldsHtml = metaFieldsDef.map(f => {
+    const val = meta[f.key];
+    if (!val) return '';
+    return `<div class="kv"><div class="k">${esc(f.label)}</div><div class="v">${esc(val)}</div></div>`;
   }).filter(Boolean).join('');
 
   // External link
@@ -1225,6 +1240,7 @@ function renderDetail(visIds) {
 
     ${arraysHtml}
     ${chipsHtml}
+    ${metaFieldsHtml ? `<div class="d-card">${metaFieldsHtml}</div>` : ''}
 
     ${state.pathMode && pathSteps.length > 1 ? `
     <div class="d-card">
