@@ -40,6 +40,8 @@
     { "from": "score-viz", "to": "score-engine", "type": "data", "meta": { "label": "VISUALIZES", "protocol": "Shared scoring logic", "frequency": "On input change" } },
     { "from": "score-map", "to": "score-engine", "type": "reference", "meta": { "label": "DOCUMENTS", "protocol": "Static reference", "frequency": "Read-only" } },
     { "from": "landing", "to": "planner", "type": "reference", "meta": { "label": "NAVIGATES", "protocol": "HTML anchor", "frequency": "On click" } },
+    { "from": "landing", "to": "build-guide", "type": "reference", "meta": { "label": "NAVIGATES", "protocol": "HTML anchor", "frequency": "On click" } },
+    { "from": "landing", "to": "ops-guide", "type": "reference", "meta": { "label": "NAVIGATES", "protocol": "HTML anchor", "frequency": "On click" } },
     { "from": "planner", "to": "crop-db", "type": "data", "meta": { "label": "RENDERS", "protocol": "Object iteration", "frequency": "On palette render" } }
   ]
 }
