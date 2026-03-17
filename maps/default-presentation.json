@@ -1,0 +1,80 @@
+{
+  "title": "Run Tree Snapshot",
+  "eyebrow": "PromptLab · Run Tree Snapshot",
+  "description": "Universal view for exported PromptLab run trees. Nodes are colored by run status, layered by runtime role, and inspectable without per-export authoring.",
+  "defaults": {
+    "showHeatmap": false,
+    "initialFocusMode": "All",
+    "initialLayer": "All"
+  },
+  "layers": {
+    "Trace": "#7c3aed",
+    "Chain": "#2563eb",
+    "LLM": "#0891b2",
+    "Tool": "#b45309",
+    "Agent": "#4f46e5",
+    "Eval": "#7c2d12",
+    "Unknown": "#64748b"
+  },
+  "statusStyles": {
+    "success": "#10b981",
+    "error": "#ef4444",
+    "running": "#f59e0b",
+    "canceled": "#6b7280"
+  },
+  "layerGlyphs": {
+    "Trace": "TR",
+    "Chain": "CH",
+    "LLM": "AI",
+    "Tool": "TL",
+    "Agent": "AG",
+    "Eval": "EV",
+    "Unknown": "??"
+  },
+  "legendItems": [
+    { "label": "Success", "color": "#10b981" },
+    { "label": "Error", "color": "#ef4444" },
+    { "label": "Running", "color": "#f59e0b" },
+    { "label": "Canceled", "color": "#6b7280" }
+  ],
+  "edgeStyles": {
+    "calls": { "stroke": "rgba(56,189,248,0.42)", "dasharray": null },
+    "variant_of": { "stroke": "rgba(168,85,247,0.42)", "dasharray": "5,3" }
+  },
+  "inspector": {
+    "fields": [
+      { "key": "type", "label": "Type" },
+      { "key": "layer", "label": "Layer" },
+      { "key": "status", "label": "Status" }
+    ],
+    "metaFields": [
+      { "key": "runtime", "label": "Runtime" },
+      { "key": "runtimeMs", "label": "Runtime (ms)" },
+      { "key": "traceId", "label": "Trace ID" },
+      { "key": "parentRunId", "label": "Parent Run" },
+      { "key": "variantId", "label": "Variant" },
+      { "key": "owner", "label": "Owner" },
+      { "key": "tokens", "label": "Tokens" },
+      { "key": "cost", "label": "Cost" },
+      { "key": "promptHash", "label": "Prompt Hash" }
+    ],
+    "metaArrays": [],
+    "metaChips": ["tags"],
+    "metaLink": null
+  },
+  "focusModes": [
+    { "id": "All", "label": "All" },
+    { "id": "Trace", "label": "Trace", "filter": { "layers": ["Trace"] } },
+    { "id": "Chains", "label": "Chains", "filter": { "layers": ["Chain"] } },
+    { "id": "LLMs", "label": "LLMs", "filter": { "layers": ["LLM"] } },
+    { "id": "Tools", "label": "Tools", "filter": { "layers": ["Tool"] } },
+    { "id": "Agents", "label": "Agents", "filter": { "layers": ["Agent"] } },
+    { "id": "Eval", "label": "Eval", "filter": { "layers": ["Eval"] } }
+  ],
+  "stats": [
+    { "label": "Visible", "count": "visible" },
+    { "label": "LLM", "filter": { "layer": "LLM" } },
+    { "label": "Tool", "filter": { "layer": "Tool" } },
+    { "label": "Trace", "filter": { "layer": "Trace" } }
+  ]
+}

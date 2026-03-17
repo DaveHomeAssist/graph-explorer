@@ -20,6 +20,13 @@
       "id": "garden-os",
       "title": "Garden OS Topology",
       "description": "Browser-native horticultural reasoning engine architecture"
+    },
+    {
+      "id": "trace_t_sample__variant_main__2026-03-17T02-00-01-000Z",
+      "name": "Run Tree: Sample PromptLab Trace",
+      "description": "Sample exported PromptLab run tree using the shared default presentation.",
+      "file": "datasets/trace_t_sample__variant_main__2026-03-17T02-00-01-000Z/dataset.json",
+      "tags": ["run-tree", "promptlab"]
     }
   ]
 }

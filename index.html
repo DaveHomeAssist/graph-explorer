@@ -108,6 +108,12 @@
     .legend { display: flex; flex-wrap: wrap; gap: 6px; }
     .legend-item { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: 10.5px; font-family: 'DM Mono', monospace; }
     .dot { width: 7px; height: 7px; border-radius: 999px; }
+    .legend-glyph {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04);
+      color: var(--text); font-size: 9px; font-weight: 700;
+    }
 
     .map-wrap {
       overflow: hidden; cursor: grab; min-height: 640px; height: 72vh; position: relative;
@@ -147,6 +153,7 @@
     .node.heat-visible .heat-ring { opacity: 0.18; }
     .node .n-bar { rx: 999; }
     .node .n-type { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.07em; text-transform: uppercase; font-weight: 500; }
+    .node .n-glyph { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.08em; font-weight: 700; }
     .node .n-name { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 800; fill: #e4ecf8; }
     .node .n-meta { font-family: 'DM Mono', monospace; font-size: 9.5px; fill: #6b85ae; }
     .node .n-degree { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 700; }
@@ -463,6 +470,7 @@ import { validateDataset } from './engine/validate.js';
 // ── Constants ────────────────────────────────────────────────────────────────
 const SUPPORTED_SCHEMA_VERSIONS = [1];
 const MANIFEST_PATH = 'maps/manifest.json';
+const DEFAULT_PRESENTATION_PATH = 'maps/default-presentation.json';
 const NW = 220;
 const NH = 88;
 const THEME_KEY = 'graph-explorer-theme';
@@ -685,18 +693,59 @@ async function loadManifest() {
 }
 
 // ── Dataset Loader ───────────────────────────────────────────────────────────
-async function loadMapPack(mapId) {
-  const base = `maps/${mapId}`;
-  showLoading(`Loading ${mapId}…`);
+function getMapEntry(mapOrId) {
+  if (typeof mapOrId === 'object' && mapOrId) return mapOrId;
+  return manifest?.maps?.find((entry) => entry.id === mapOrId) || null;
+}
+
+function getMapLabel(entry) {
+  return entry?.title || entry?.name || entry?.id || 'map';
+}
+
+function getDatasetPath(entry) {
+  return entry?.file || `maps/${entry.id}/dataset.json`;
+}
+
+function getPresentationPath(entry) {
+  if (entry?.presentation) return entry.presentation;
+  if (entry?.file) {
+    const lastSlash = entry.file.lastIndexOf('/');
+    return lastSlash >= 0
+      ? `${entry.file.slice(0, lastSlash)}/presentation.json`
+      : 'presentation.json';
+  }
+  return `maps/${entry.id}/presentation.json`;
+}
+
+async function loadMapPack(mapOrId) {
+  const entry = getMapEntry(mapOrId);
+  if (!entry) {
+    showError('Map Load Failed', [`Unknown map "${esc(String(mapOrId || ''))}".`]);
+    return false;
+  }
+
+  const datasetPath = getDatasetPath(entry);
+  const presentationPath = getPresentationPath(entry);
+  showLoading(`Loading ${getMapLabel(entry)}…`);
 
   try {
-    const [dataRes, presRes] = await Promise.all([
-      fetch(`${base}/dataset.json`),
-      fetch(`${base}/presentation.json`),
+    const [dataRes, initialPresRes] = await Promise.all([
+      fetch(datasetPath),
+      fetch(presentationPath),
     ]);
 
-    if (!dataRes.ok) throw new Error(`Failed to load ${base}/dataset.json (${dataRes.status})`);
-    if (!presRes.ok) throw new Error(`Failed to load ${base}/presentation.json (${presRes.status})`);
+    if (!dataRes.ok) throw new Error(`Failed to load ${datasetPath} (${dataRes.status})`);
+
+    let presRes = initialPresRes;
+    if (!presRes.ok) {
+      if (presRes.status !== 404) {
+        throw new Error(`Failed to load ${presentationPath} (${presRes.status})`);
+      }
+      presRes = await fetch(DEFAULT_PRESENTATION_PATH);
+      if (!presRes.ok) {
+        throw new Error(`Failed to load ${presentationPath} (${initialPresRes.status}) and fallback ${DEFAULT_PRESENTATION_PATH} (${presRes.status})`);
+      }
+    }
 
     const dataset = await dataRes.json();
     const pres = await presRes.json();
@@ -710,7 +759,7 @@ async function loadMapPack(mapId) {
     validationWarnings = result.warnings.slice();
 
     // Install data
-    currentMapId = mapId;
+    currentMapId = entry.id;
     nodes = dataset.nodes;
     edges = dataset.edges;
     presentation = pres;
@@ -818,8 +867,11 @@ function restoreCanvas() {
 
 // ── Presentation-driven setup ────────────────────────────────────────────────
 function setupLegend() {
-  document.getElementById('legend').innerHTML = Object.entries(layers).map(([name, col]) =>
-    `<span class="legend-item"><span class="dot" style="background:${col}"></span>${name}</span>`
+  const items = Array.isArray(presentation.legendItems) && presentation.legendItems.length
+    ? presentation.legendItems
+    : Object.entries(layers).map(([label, color]) => ({ label, color }));
+  document.getElementById('legend').innerHTML = items.map((item) =>
+    `<span class="legend-item">${item.glyph ? `<span class="legend-glyph">${esc(item.glyph)}</span>` : `<span class="dot" style="background:${item.color}"></span>`}${esc(item.label)}</span>`
   ).join('');
 }
 
@@ -864,6 +916,16 @@ function setupMarkers() {
     marker.appendChild(path);
     defs.appendChild(marker);
   });
+}
+
+function getNodeAccent(node) {
+  const statusStyles = presentation.statusStyles || {};
+  return statusStyles[node.status] || layers[node.layer] || '#818cf8';
+}
+
+function getNodeGlyph(node) {
+  const layerGlyphs = presentation.layerGlyphs || {};
+  return layerGlyphs[node.layer] || '';
 }
 
 // ── Theme ────────────────────────────────────────────────────────────────────
@@ -1091,7 +1153,8 @@ function renderMap(visIds) {
     if (!pos) return;
     const px = pos.x - offX;
     const py = pos.y - offY;
-    const col = layers[n.layer] || '#818cf8';
+    const col = getNodeAccent(n);
+    const glyph = getNodeGlyph(n);
     const deg = degree[n.id];
     const heat = state.heatmap ? (deg / maxDegree) : 0;
     const heatCol = heat > 0.6 ? '#ef4444' : heat > 0.35 ? '#f59e0b' : '#38bdf8';
@@ -1120,6 +1183,7 @@ function renderMap(visIds) {
       <rect class="bg" width="${NW}" height="${NH}" rx="13" style="${n.id===state.selectedId?`stroke:${col};${selGlow}`:''}"/>
       <rect class="n-bar" x="13" y="12" width="36" height="5" fill="${col}" opacity="0.85"/>
       <text class="n-type" x="13" y="28" fill="${col}">${esc(n.type)}</text>
+      ${glyph ? `<text class="n-glyph" x="${NW-13}" y="28" text-anchor="end" fill="${col}">${esc(glyph)}</text>` : ''}
       <text class="n-name" x="13" y="48">${esc(displayName)}</text>
       <text class="n-meta" x="13" y="64">${esc(n.layer)} · ${esc(n.status || '')}</text>
       <text class="n-meta" x="13" y="78">${tags.slice(0,2).map(t=>'#'+t).join('  ')}</text>
@@ -1370,13 +1434,13 @@ function populateSelect(id, values) {
 function setupMapSelector(maps, initialId) {
   const sel = document.getElementById('mapSelect');
   sel.innerHTML = maps.map(m =>
-    `<option value="${m.id}" title="${esc(m.description || '')}">${esc(m.title)}</option>`
+    `<option value="${m.id}" title="${esc(m.description || '')}">${esc(getMapLabel(m))}</option>`
   ).join('');
   sel.value = initialId;
 
   sel.addEventListener('change', async () => {
-    const mapId = sel.value;
-    const ok = await loadMapPack(mapId);
+    const entry = getMapEntry(sel.value);
+    const ok = await loadMapPack(entry);
     if (ok) {
       // Clear node-specific URL state on map switch
       state.selectedId = nodes[0]?.id || null;
@@ -1486,7 +1550,7 @@ document.getElementById('nodeGroup').onclick = handleNodeClick;
   setupMapSelector(m.maps, initialMap.id);
 
   // 4. Load the map pack
-  const ok = await loadMapPack(initialMap.id);
+  const ok = await loadMapPack(initialMap);
   if (!ok) return;
 
   // 5. Apply URL state overrides
