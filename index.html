@@ -4,9 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Graph Explorer</title>
-      <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon/favicon-32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon/favicon-16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/favicon/apple-touch-icon.png" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230d1420'/%3E%3Ccircle cx='18' cy='18' r='6' fill='%2334d399'/%3E%3Ccircle cx='46' cy='18' r='6' fill='%23818cf8'/%3E%3Ccircle cx='32' cy='46' r='6' fill='%23f59e0b'/%3E%3Cpath d='M18 18 46 18M18 18 32 46M46 18 32 46' stroke='%23e4ecf8' stroke-width='4' stroke-linecap='round' fill='none'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
@@ -67,6 +65,10 @@
     .field label { display: block; font-size: 9.5px; color: var(--muted); letter-spacing: 0.07em; text-transform: uppercase; font-family: 'DM Mono', monospace; margin-bottom: 3px; }
     .field input, .field select { width: 100%; background: transparent; border: 0; outline: 0; color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif; }
     .field select option { background: var(--panel); }
+    .field:focus-within {
+      border-color: rgba(129,140,248,0.4);
+      box-shadow: 0 0 0 2px rgba(129,140,248,0.18);
+    }
 
     .seg { display: flex; gap: 3px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px; }
     .seg button {
@@ -74,6 +76,15 @@
       cursor: pointer; font-size: 11.5px; font-weight: 700; font-family: 'DM Sans', sans-serif; white-space: nowrap; transition: all 130ms;
     }
     .seg button.active, .seg button:hover { background: rgba(129,140,248,0.14); color: var(--text); }
+    .seg button:focus-visible,
+    .icon-btn:focus-visible,
+    .map-select:focus-visible,
+    .path-clear:focus-visible,
+    .path-target-select:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(129,140,248,0.32);
+      color: var(--text);
+    }
 
     .icon-btn {
       background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
@@ -99,7 +110,7 @@
     .dot { width: 7px; height: 7px; border-radius: 999px; }
 
     .map-wrap {
-      overflow: hidden; cursor: grab; min-height: 640px; height: 72vh;
+      overflow: hidden; cursor: grab; min-height: 640px; height: 72vh; position: relative;
       background:
         radial-gradient(circle at 15% 20%, rgba(129,140,248,0.07), transparent 35%),
         radial-gradient(circle at 82% 65%, rgba(52,211,153,0.05), transparent 35%),
@@ -231,6 +242,30 @@
       color: var(--text); padding: 4px 8px; font-size: 11.5px; font-family: 'DM Sans', sans-serif; cursor: pointer; max-width: 200px;
     }
     .path-target-select option { background: var(--panel); }
+    .quality-badge {
+      display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px; color: var(--muted); font-size: 10.5px; font-weight: 700;
+      font-family: 'DM Mono', monospace;
+    }
+    .quality-badge.warn {
+      background: rgba(245,158,11,0.1);
+      border-color: rgba(245,158,11,0.22);
+      color: #fbbf24;
+    }
+    .warning-note {
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.18);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+    }
+    .warning-note .d-list li { color: var(--text); }
+    .warning-note .d-desc { color: var(--muted); }
+    .map-empty {
+      position: absolute; inset: 0; display: grid; place-items: center; padding: 24px;
+      background: rgba(7,11,18,0.44); backdrop-filter: blur(4px); pointer-events: none;
+    }
+    .map-empty[hidden] { display: none; }
 
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 
@@ -281,6 +316,10 @@
       html:not([data-theme]) .node.dimmed { opacity: 0.18 !important; }
       html:not([data-theme]) .seg button.active,
       html:not([data-theme]) .seg button:hover { background: rgba(79,70,229,0.1); }
+      html:not([data-theme]) .quality-badge { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.08); }
+      html:not([data-theme]) .quality-badge.warn { background: rgba(217,119,6,0.1); border-color: rgba(217,119,6,0.18); color: #b45309; }
+      html:not([data-theme]) .warning-note { background: rgba(217,119,6,0.08); border-color: rgba(217,119,6,0.18); }
+      html:not([data-theme]) .map-empty { background: rgba(240,242,247,0.68); }
     }
 
     html[data-theme='light'] {
@@ -326,6 +365,10 @@
     html[data-theme='light'] .node.dimmed { opacity: 0.18 !important; }
     html[data-theme='light'] .seg button.active,
     html[data-theme='light'] .seg button:hover { background: rgba(79,70,229,0.1); }
+    html[data-theme='light'] .quality-badge { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.08); }
+    html[data-theme='light'] .quality-badge.warn { background: rgba(217,119,6,0.1); border-color: rgba(217,119,6,0.18); color: #b45309; }
+    html[data-theme='light'] .warning-note { background: rgba(217,119,6,0.08); border-color: rgba(217,119,6,0.18); }
+    html[data-theme='light'] .map-empty { background: rgba(240,242,247,0.68); }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -385,6 +428,7 @@
           <div class="canvas-hint">Scroll to zoom · drag to pan · click node to focus</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <div class="legend" id="dataQuality"></div>
           <div class="legend" id="legend"></div>
           <div class="legend" id="edgeLegend"></div>
         </div>
@@ -397,6 +441,13 @@
             <g id="nodeGroup"></g>
           </g>
         </svg>
+        <div class="map-empty" id="mapEmpty" hidden>
+          <div class="status-card" style="margin:0;max-width:420px">
+            <div class="status-icon">🔎</div>
+            <div class="status-title">No nodes match these filters</div>
+            <div>Adjust search, layer, or focus mode to bring the graph back into view.</div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -406,61 +457,15 @@
   </div>
 </main>
 
-<script>
+<script type="module">
+import { validateDataset } from './engine/validate.js';
+
 // ── Constants ────────────────────────────────────────────────────────────────
 const SUPPORTED_SCHEMA_VERSIONS = [1];
 const MANIFEST_PATH = 'maps/manifest.json';
 const NW = 220;
 const NH = 88;
 const THEME_KEY = 'graph-explorer-theme';
-
-// ── Schema Validator ─────────────────────────────────────────────────────────
-function validateDataset(data) {
-  const errors = [];
-  const warnings = [];
-  if (!data || typeof data !== 'object') return { valid: false, errors: ['Dataset must be a JSON object.'], warnings };
-
-  // Schema version enforcement
-  if (data.version == null) {
-    warnings.push('Dataset has no "version" field — assuming v1.');
-  } else if (!SUPPORTED_SCHEMA_VERSIONS.includes(data.version)) {
-    errors.push(`Unsupported schema version ${data.version}. This engine supports: ${SUPPORTED_SCHEMA_VERSIONS.join(', ')}.`);
-    return { valid: false, errors, warnings };
-  }
-
-  if (!Array.isArray(data.nodes)) errors.push('Missing or invalid "nodes" array.');
-  if (!Array.isArray(data.edges)) errors.push('Missing or invalid "edges" array.');
-  if (errors.length) return { valid: false, errors, warnings };
-  if (!data.meta?.id) warnings.push('Dataset has no meta.id.');
-  const nodeIds = new Set();
-  data.nodes.forEach((n, i) => {
-    const p = `nodes[${i}]`;
-    if (!n.id || typeof n.id !== 'string') { errors.push(`${p}: missing or invalid "id".`); return; }
-    if (nodeIds.has(n.id)) errors.push(`${p}: duplicate id "${n.id}".`);
-    nodeIds.add(n.id);
-    if (!n.label || typeof n.label !== 'string') errors.push(`${p} (${n.id}): missing or invalid "label".`);
-    if (!n.type  || typeof n.type  !== 'string') warnings.push(`${p} (${n.id}): missing "type".`);
-    if (!n.layer || typeof n.layer !== 'string') warnings.push(`${p} (${n.id}): missing "layer".`);
-    if (n.meta && typeof n.meta !== 'object') errors.push(`${p} (${n.id}): "meta" must be an object if present.`);
-  });
-  const edgeKeys = new Set();
-  data.edges.forEach((e, i) => {
-    const p = `edges[${i}]`;
-    if (!e.from || typeof e.from !== 'string') { errors.push(`${p}: missing or invalid "from".`); return; }
-    if (!e.to   || typeof e.to   !== 'string') { errors.push(`${p}: missing or invalid "to".`); return; }
-    if (!nodeIds.has(e.from)) errors.push(`${p}: "from" references unknown node "${e.from}".`);
-    if (!nodeIds.has(e.to))   errors.push(`${p}: "to" references unknown node "${e.to}".`);
-    if (e.from === e.to) warnings.push(`${p}: self-loop on "${e.from}".`);
-    const key = `${e.from}→${e.to}`;
-    if (edgeKeys.has(key)) warnings.push(`${p}: duplicate edge ${key}.`);
-    edgeKeys.add(key);
-    if (!e.type || typeof e.type !== 'string') warnings.push(`${p}: missing "type".`);
-  });
-  const connected = new Set();
-  data.edges.forEach(e => { connected.add(e.from); connected.add(e.to); });
-  nodeIds.forEach(id => { if (!connected.has(id)) warnings.push(`Node "${id}" has no edges (orphan).`); });
-  return { valid: errors.length === 0, errors, warnings };
-}
 
 // ── Graph State ──────────────────────────────────────────────────────────────
 let manifest = null;
@@ -473,6 +478,7 @@ let adjacency = {};
 let degree = {};
 let maxDegree = 0;
 let currentMapId = null;
+let validationWarnings = [];
 
 const state = {
   search: '',
@@ -601,7 +607,7 @@ function updatePathBar() {
   // Target dropdown — populate with all nodes except source
   const currentTarget = targetSel.value;
   targetSel.innerHTML = '<option value="">Select target…</option>';
-  nodes.forEach(n => {
+  [...nodes].sort((a, b) => a.label.localeCompare(b.label)).forEach(n => {
     if (n.id === state.selectedId) return;
     const opt = document.createElement('option');
     opt.value = n.id;
@@ -643,6 +649,7 @@ function showLoading(message) {
 function showError(title, errors, warnings) {
   const panel = document.getElementById('detailPanel');
   if (panel) panel.innerHTML = '';
+  validationWarnings = warnings || [];
   const wrap = document.getElementById('mapWrap');
   if (!wrap) return;
   const w = warnings || [];
@@ -700,9 +707,7 @@ async function loadMapPack(mapId) {
       showError('Dataset Validation Failed', result.errors, result.warnings);
       return false;
     }
-    if (result.warnings.length) {
-      console.warn('[Graph Explorer] Validation warnings:', result.warnings);
-    }
+    validationWarnings = result.warnings.slice();
 
     // Install data
     currentMapId = mapId;
@@ -793,6 +798,17 @@ function restoreCanvas() {
   svg.appendChild(zg);
   wrap.appendChild(svg);
 
+  const empty = document.createElement('div');
+  empty.id = 'mapEmpty';
+  empty.className = 'map-empty';
+  empty.hidden = true;
+  empty.innerHTML = `<div class="status-card" style="margin:0;max-width:420px">
+    <div class="status-icon">🔎</div>
+    <div class="status-title">No nodes match these filters</div>
+    <div>Adjust search, layer, or focus mode to bring the graph back into view.</div>
+  </div>`;
+  wrap.appendChild(empty);
+
   // Re-bind D3 zoom
   d3.select(svg).call(zoom);
   // Re-bind node keyboard handler
@@ -813,6 +829,20 @@ function setupEdgeLegend() {
     const dash = s.dasharray ? ` stroke-dasharray="${s.dasharray}"` : '';
     return `<span class="legend-item"><svg width="22" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="${s.stroke}" stroke-width="1.5"${dash}/></svg> ${name}</span>`;
   }).join('');
+}
+
+function renderDataQuality() {
+  const quality = document.getElementById('dataQuality');
+  if (!quality) return;
+  const badges = [
+    `<span class="quality-badge">schema v1</span>`,
+    `<span class="quality-badge">${nodes.length} nodes</span>`,
+    `<span class="quality-badge">${edges.length} edges</span>`,
+  ];
+  if (validationWarnings.length) {
+    badges.push(`<span class="quality-badge warn">warnings ${validationWarnings.length}</span>`);
+  }
+  quality.innerHTML = badges.join('');
 }
 
 function setupMarkers() {
@@ -1018,10 +1048,17 @@ function renderMap(visIds) {
   nodeGrp.innerHTML = '';
 
   const svgEl = document.getElementById('map');
+  const emptyEl = document.getElementById('mapEmpty');
   const ww = mapWrap.clientWidth || 900;
   const wh = mapWrap.clientHeight || 640;
   svgEl.setAttribute('viewBox', `0 0 ${ww} ${wh}`);
   svgEl.setAttribute('height', wh);
+  if (emptyEl) emptyEl.hidden = visIds.size > 0;
+
+  if (!visIds.size) {
+    document.getElementById('canvasTitle').textContent = 'No matching nodes';
+    return;
+  }
 
   edges.forEach(({ from, to, type }) => {
     if (!visIds.has(from) || !visIds.has(to)) return;
@@ -1120,7 +1157,12 @@ function handleNodeKeydown(e) {
   const g = e.target.closest('g[data-id]');
   if (!g) return;
   e.preventDefault();
-  state.selectedId = g.dataset.id;
+  const id = g.dataset.id;
+  if (state.selectedId === id) {
+    state.focusNode = state.focusNode === id ? null : id;
+    layoutCache = null;
+  }
+  state.selectedId = id;
   render(false);
 }
 
@@ -1206,6 +1248,16 @@ function renderDetail(visIds) {
     .join('');
 
   panel.innerHTML = `
+    ${validationWarnings.length ? `
+    <div class="d-card warning-note">
+      <div class="d-kicker">Dataset warnings</div>
+      <p class="d-desc" style="margin-top:6px">Validation passed, but this map ships with data issues worth reviewing.</p>
+      <ul class="d-list">
+        ${validationWarnings.slice(0, 4).map(item => `<li>${esc(item)}</li>`).join('')}
+        ${validationWarnings.length > 4 ? `<li>${validationWarnings.length - 4} more warning${validationWarnings.length - 4 === 1 ? '' : 's'} not shown</li>` : ''}
+      </ul>
+    </div>` : ''}
+
     <div class="d-card">
       <div class="d-kicker">${esc(n.layer)} · ${esc(n.type)}</div>
       <div class="d-title">${esc(n.label)}</div>
@@ -1292,6 +1344,7 @@ function render(refit = true) {
   updatePathBar();
   renderFocusModes();
   const visIds = getVisibleIds();
+  renderDataQuality();
   renderStats(visIds);
   renderMap(visIds);
   renderDetail(visIds);
