@@ -1,0 +1,511 @@
+{
+  "version": 1,
+  "meta": {
+    "id": "ecosystem-issues",
+    "name": "Ecosystem Issue Tracker",
+    "version": "1.0",
+    "description": "Cross-project issue topology — 18 active projects, all open P1/P2 issues, and shared issue patterns",
+    "author": "DaveHomeAssist",
+    "source": "AGENTS.md issue trackers (audited 2026-03-18)"
+  },
+  "nodes": [
+    {
+      "id": "prompt-lab",
+      "label": "Prompt Lab",
+      "type": "Project",
+      "layer": "Tier 1",
+      "status": "Active",
+      "meta": {
+        "desc": "Multi-surface prompt engineering tool — Chrome extension, desktop, and web",
+        "tags": ["react", "vite", "chrome-extension", "v1.7.0"],
+        "url": "https://github.com/DaveHomeAssist/prompt-lab",
+        "risks": ["Composer teaches drag-first", "Accessibility parity incomplete"],
+        "nextMoves": ["Phase 2 semantic diff", "Unify experiments and run history"]
+      }
+    },
+    {
+      "id": "garden-os",
+      "label": "Garden OS",
+      "type": "Project",
+      "layer": "Tier 1",
+      "status": "Clean",
+      "meta": {
+        "desc": "Browser-native garden planning ecosystem with scoring engine and narrative game",
+        "tags": ["static", "vanilla-js", "local-storage", "planner-v4.3", "engine-v4.0"],
+        "url": "https://github.com/DaveHomeAssist/garden-os",
+        "risks": [],
+        "nextMoves": ["Deepen planner explainability", "Consequence summaries"]
+      }
+    },
+    {
+      "id": "curlplan",
+      "label": "CurlPlan",
+      "type": "Project",
+      "layer": "Tier 1",
+      "status": "At Risk",
+      "meta": {
+        "desc": "Local-first curling operations tracker — games, practice, ice reads",
+        "tags": ["static", "single-file", "local-storage"],
+        "url": "https://github.com/DaveHomeAssist/curl-plan",
+        "risks": ["SW cache stale", "Legacy import broken"],
+        "nextMoves": ["Fix service worker versioning", "Implement data migration"]
+      }
+    },
+    {
+      "id": "trailkeeper",
+      "label": "Trailkeeper",
+      "type": "Project",
+      "layer": "Tier 1",
+      "status": "At Risk",
+      "meta": {
+        "desc": "Local-first hiking log and field dashboard",
+        "tags": ["vanilla-js", "local-storage", "overpass-api", "v1.0"],
+        "url": "https://github.com/DaveHomeAssist/trailkeeper",
+        "risks": ["Silent SW registration", "API errors indistinct", "Status toggle no undo"],
+        "nextMoves": ["Add data import", "Fix error differentiation"]
+      }
+    },
+    {
+      "id": "catering",
+      "label": "Catering",
+      "type": "Project",
+      "layer": "Tier 1",
+      "status": "At Risk",
+      "meta": {
+        "desc": "Premium service site for Act Two Catering — marketing and lead generation",
+        "tags": ["static", "service-worker"],
+        "url": "https://github.com/DaveHomeAssist/catering",
+        "risks": ["Quote form is a dead end"],
+        "nextMoves": ["Wire real form backend"]
+      }
+    },
+    {
+      "id": "graph-explorer",
+      "label": "Graph Explorer",
+      "type": "Project",
+      "layer": "Tier 1",
+      "status": "At Risk",
+      "meta": {
+        "desc": "Static graph inspection tool with topology datasets and map packs",
+        "tags": ["static", "dagre", "svg", "vanilla-js"],
+        "url": "https://github.com/DaveHomeAssist/graph-explorer",
+        "risks": ["Path validation crash", "focusNode crash", "historySuspend stuck", "Empty dataset NaN"],
+        "nextMoves": ["Add null guards", "Fix undo error handling"]
+      }
+    },
+    {
+      "id": "metagrid",
+      "label": "Metagrid",
+      "type": "Project",
+      "layer": "Tier 1",
+      "status": "Active",
+      "meta": {
+        "desc": "Wireless power infrastructure concept site — Next.js marketing surface",
+        "tags": ["nextjs", "react", "tailwind", "v0.1.0"],
+        "url": "https://github.com/DaveHomeAssist/metagrid",
+        "risks": ["Formspree ID placeholder", "FAQ truncation"],
+        "nextMoves": ["Set env vars", "Add per-page OG tags"]
+      }
+    },
+    {
+      "id": "shieldbox",
+      "label": "ShieldBox",
+      "type": "Project",
+      "layer": "Tier 2",
+      "status": "At Risk",
+      "meta": {
+        "desc": "Event security quote intake portal — v4 gold master",
+        "tags": ["static", "single-file", "multi-theme", "v4-gold"],
+        "url": "https://github.com/DaveHomeAssist/shieldbox-security-event-quote-request-v4-gold-master.html",
+        "risks": ["No checkbox names", "No quote calc", "No validation", "No attendance bounds"],
+        "nextMoves": ["Add form serialization", "Build quote calculator", "Fix validation flow"]
+      }
+    },
+    {
+      "id": "davehomeassist",
+      "label": "DaveHomeAssist Hub",
+      "type": "Project",
+      "layer": "Tier 2",
+      "status": "At Risk",
+      "meta": {
+        "desc": "GitHub Pages portfolio hub — multiple landing pages plus subsites",
+        "tags": ["static", "github-pages", "index-v3"],
+        "url": "https://github.com/DaveHomeAssist/DaveHomeAssist.github.io",
+        "risks": ["Placeholder email in Elysium", "Incomplete LinkedIn URL"],
+        "nextMoves": ["Fix contact links", "Add back navigation to specialty pages"]
+      }
+    },
+    {
+      "id": "notion-widgets",
+      "label": "NotionWidgets",
+      "type": "Project",
+      "layer": "Tier 2",
+      "status": "At Risk",
+      "meta": {
+        "desc": "Embeddable Notion widgets — approval, status, quest log, workspace map",
+        "tags": ["static", "d3", "notion-embed"],
+        "url": "https://github.com/DaveHomeAssist/NotionWidgets",
+        "risks": ["Duplicate submit race", "nodeMap crash", "XSS in innerHTML"],
+        "nextMoves": ["Add submit debounce", "Sanitize all innerHTML paths"]
+      }
+    },
+    {
+      "id": "freelance",
+      "label": "Freelance",
+      "type": "Project",
+      "layer": "Tier 2",
+      "status": "At Risk",
+      "meta": {
+        "desc": "Freelance services site — static single page with Netlify deploy",
+        "tags": ["static", "netlify"],
+        "url": "https://github.com/DaveHomeAssist/freelance",
+        "risks": ["Contact form is non-functional"],
+        "nextMoves": ["Wire form submission to Netlify or POST endpoint"]
+      }
+    },
+    {
+      "id": "contractor",
+      "label": "Contractor",
+      "type": "Project",
+      "layer": "Tier 2",
+      "status": "Clean",
+      "meta": {
+        "desc": "Licensed contractor service landing page with Netlify forms",
+        "tags": ["static", "netlify"],
+        "url": "https://github.com/DaveHomeAssist/contractor"
+      }
+    },
+    {
+      "id": "sdlc-map",
+      "label": "SDLC Tool Stack Map",
+      "type": "Project",
+      "layer": "Tier 2",
+      "status": "Clean",
+      "meta": {
+        "desc": "Interactive SDLC tool comparison visualization",
+        "tags": ["static", "single-file"],
+        "url": "https://github.com/DaveHomeAssist/sdlc-tool-stack-map"
+      }
+    },
+    {
+      "id": "gemini-calc",
+      "label": "Gemini API Calculator",
+      "type": "Project",
+      "layer": "Tier 2",
+      "status": "Clean",
+      "meta": {
+        "desc": "Real-time API cost comparison across LLM providers",
+        "tags": ["static", "single-file"],
+        "url": "https://github.com/DaveHomeAssist/gemini-api-cost-calculator"
+      }
+    },
+    {
+      "id": "web-templates",
+      "label": "Web Templates",
+      "type": "Project",
+      "layer": "Tier 3",
+      "status": "Clean",
+      "meta": { "desc": "Reference layout pack — 8 patterns", "tags": ["static", "templates"] }
+    },
+    {
+      "id": "favicons",
+      "label": "Favicons",
+      "type": "Project",
+      "layer": "Tier 3",
+      "status": "Clean",
+      "meta": { "desc": "Central SVG favicon gallery for ecosystem", "tags": ["svg", "shared"] }
+    },
+    {
+      "id": "utility",
+      "label": "Utility",
+      "type": "Project",
+      "layer": "Tier 3",
+      "status": "Clean",
+      "meta": { "desc": "Misc utility scripts and standalone tools", "tags": ["jsx", "reference"] }
+    },
+    {
+      "id": "freelance-landing",
+      "label": "Freelance Landing",
+      "type": "Project",
+      "layer": "Tier 3",
+      "status": "Clean",
+      "meta": { "desc": "Standalone landing page JSX component", "tags": ["jsx", "campaign"] }
+    },
+
+    {
+      "id": "pattern-form-dead-end",
+      "label": "Dead-End Forms",
+      "type": "Pattern",
+      "layer": "Issue Pattern",
+      "status": "P1",
+      "meta": {
+        "desc": "Contact/quote forms that appear functional but never submit data to a backend",
+        "tags": ["form", "lead-loss", "P1"],
+        "risks": ["Customer leads silently lost", "Trust damage if user discovers"],
+        "nextMoves": ["Wire Netlify or Formspree endpoints", "Add submission confirmation"]
+      }
+    },
+    {
+      "id": "pattern-sw-stale",
+      "label": "Stale Service Workers",
+      "type": "Pattern",
+      "layer": "Issue Pattern",
+      "status": "P1",
+      "meta": {
+        "desc": "Service worker cache versions are hardcoded — users never see updates without force-refresh",
+        "tags": ["service-worker", "cache", "P1"],
+        "risks": ["Users stuck on old versions", "Bug fixes not delivered"],
+        "nextMoves": ["Version-string cache names", "Add update notification"]
+      }
+    },
+    {
+      "id": "pattern-silent-error",
+      "label": "Silent Error Swallowing",
+      "type": "Pattern",
+      "layer": "Issue Pattern",
+      "status": "P2",
+      "meta": {
+        "desc": "Error handlers that catch and discard without user notification — storage failures, API timeouts, SW registration",
+        "tags": ["error-handling", "silent-fail", "P2"],
+        "risks": ["Users think action succeeded when it failed", "Data loss without awareness"],
+        "nextMoves": ["Add toast/banner for caught errors", "Differentiate error types in UI"]
+      }
+    },
+    {
+      "id": "pattern-no-undo",
+      "label": "Missing Undo/Recovery",
+      "type": "Pattern",
+      "layer": "Issue Pattern",
+      "status": "P2",
+      "meta": {
+        "desc": "Destructive actions (status toggle, delete, import overwrite) without undo path",
+        "tags": ["undo", "data-safety", "P2"],
+        "risks": ["Accidental data loss", "User frustration"],
+        "nextMoves": ["Add showUndoToast pattern from Garden OS"]
+      }
+    },
+    {
+      "id": "pattern-a11y-gaps",
+      "label": "Accessibility Gaps",
+      "type": "Pattern",
+      "layer": "Issue Pattern",
+      "status": "P2",
+      "meta": {
+        "desc": "Missing aria labels, keyboard nav holes, color contrast failures, and missing focus indicators across multiple projects",
+        "tags": ["a11y", "wcag", "P2"],
+        "risks": ["Excludes assistive tech users", "Fails WCAG AA compliance"],
+        "nextMoves": ["Batch a11y pass using shared-standards checklist"]
+      }
+    },
+    {
+      "id": "pattern-null-crash",
+      "label": "Null Reference Crashes",
+      "type": "Pattern",
+      "layer": "Issue Pattern",
+      "status": "P1",
+      "meta": {
+        "desc": "Missing null guards on map/object lookups — nodeMap[id].label, state.focusNode access without validation",
+        "tags": ["null-guard", "runtime-crash", "P1"],
+        "risks": ["Widget/app crashes on edge case data", "Breaks entire view"],
+        "nextMoves": ["Add optional chaining or explicit guards at lookup sites"]
+      }
+    },
+
+    {
+      "id": "cp-001",
+      "label": "CP-001: SW cache stale",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "Service worker cache not updating on edits", "tags": ["service-worker", "open"] }
+    },
+    {
+      "id": "cp-003",
+      "label": "CP-003: Legacy import broken",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "importData fails on legacy schema versions", "tags": ["data-migration", "open"] }
+    },
+    {
+      "id": "cat-001",
+      "label": "CAT-001: Quote form dead",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "Quote form does not submit to a real backend", "tags": ["form", "lead-loss", "open"] }
+    },
+    {
+      "id": "tk-001",
+      "label": "TK-001: SW silent fail",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "Service worker registration swallows errors silently", "tags": ["service-worker", "open"] }
+    },
+    {
+      "id": "tk-002",
+      "label": "TK-002: API error indistinct",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "Overpass API timeout returns null with no error context", "tags": ["error-handling", "open"] }
+    },
+    {
+      "id": "tk-003",
+      "label": "TK-003: Status no undo",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "Trail status toggle has no undo — can lose planned state", "tags": ["undo", "open"] }
+    },
+    {
+      "id": "sb-001",
+      "label": "SB-001: No checkbox names",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "Checkbox inputs lack name attributes — cannot serialize as form data", "tags": ["form", "open"] }
+    },
+    {
+      "id": "sb-002",
+      "label": "SB-002: No quote calc",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "Billing rates display but no JS computes a total estimate", "tags": ["feature-gap", "open"] }
+    },
+    {
+      "id": "sb-003",
+      "label": "SB-003: Duration unvalidated",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "Event duration field accepts any free text with no validation", "tags": ["validation", "open"] }
+    },
+    {
+      "id": "sb-004",
+      "label": "SB-004: Attendance unbounded",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "Attendance input has no max bound", "tags": ["validation", "open"] }
+    },
+    {
+      "id": "dha-001",
+      "label": "DHA-001: Placeholder email",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "Elysium Landing contact CTA links to hello@example.com", "tags": ["broken-link", "open"] }
+    },
+    {
+      "id": "dha-002",
+      "label": "DHA-002: LinkedIn incomplete",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "Video engineer LinkedIn URL points to generic linkedin.com", "tags": ["broken-link", "open"] }
+    },
+    {
+      "id": "nw-001",
+      "label": "NW-001: Duplicate submit",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "Client approval submit allows duplicate postMessages", "tags": ["race-condition", "open"] }
+    },
+    {
+      "id": "nw-002",
+      "label": "NW-002: nodeMap crash",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "Workspace map crashes on broken dataset node references", "tags": ["null-guard", "open"] }
+    },
+    {
+      "id": "ge-001",
+      "label": "GE-001: Path null validation",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "Path finding does not validate that source/target nodes exist", "tags": ["null-guard", "open"] }
+    },
+    {
+      "id": "ge-002",
+      "label": "GE-002: focusNode crash",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "Unsafe .label access on potentially undefined nodeMap entry", "tags": ["null-guard", "open"] }
+    },
+    {
+      "id": "ge-003",
+      "label": "GE-003: historySuspend stuck",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "If render() throws, undo snapshots are permanently blocked", "tags": ["state-bug", "open"] }
+    },
+    {
+      "id": "ge-004",
+      "label": "GE-004: Empty dataset NaN",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "computeLayout with zero nodes yields Infinity/NaN bounds", "tags": ["edge-case", "open"] }
+    },
+    {
+      "id": "fr-001",
+      "label": "FR-001: Form dead end",
+      "type": "Issue",
+      "layer": "P1 Issues",
+      "status": "P1",
+      "meta": { "desc": "Contact form sets local state only — data never submitted", "tags": ["form", "lead-loss", "open"] }
+    }
+  ],
+  "edges": [
+    { "from": "curlplan", "to": "cp-001", "type": "has-issue" },
+    { "from": "curlplan", "to": "cp-003", "type": "has-issue" },
+    { "from": "catering", "to": "cat-001", "type": "has-issue" },
+    { "from": "trailkeeper", "to": "tk-001", "type": "has-issue" },
+    { "from": "trailkeeper", "to": "tk-002", "type": "has-issue" },
+    { "from": "trailkeeper", "to": "tk-003", "type": "has-issue" },
+    { "from": "shieldbox", "to": "sb-001", "type": "has-issue" },
+    { "from": "shieldbox", "to": "sb-002", "type": "has-issue" },
+    { "from": "shieldbox", "to": "sb-003", "type": "has-issue" },
+    { "from": "shieldbox", "to": "sb-004", "type": "has-issue" },
+    { "from": "davehomeassist", "to": "dha-001", "type": "has-issue" },
+    { "from": "davehomeassist", "to": "dha-002", "type": "has-issue" },
+    { "from": "notion-widgets", "to": "nw-001", "type": "has-issue" },
+    { "from": "notion-widgets", "to": "nw-002", "type": "has-issue" },
+    { "from": "graph-explorer", "to": "ge-001", "type": "has-issue" },
+    { "from": "graph-explorer", "to": "ge-002", "type": "has-issue" },
+    { "from": "graph-explorer", "to": "ge-003", "type": "has-issue" },
+    { "from": "graph-explorer", "to": "ge-004", "type": "has-issue" },
+    { "from": "freelance", "to": "fr-001", "type": "has-issue" },
+
+    { "from": "cat-001", "to": "pattern-form-dead-end", "type": "matches-pattern" },
+    { "from": "fr-001", "to": "pattern-form-dead-end", "type": "matches-pattern" },
+    { "from": "sb-001", "to": "pattern-form-dead-end", "type": "matches-pattern" },
+
+    { "from": "cp-001", "to": "pattern-sw-stale", "type": "matches-pattern" },
+    { "from": "tk-001", "to": "pattern-sw-stale", "type": "matches-pattern" },
+
+    { "from": "tk-002", "to": "pattern-silent-error", "type": "matches-pattern" },
+    { "from": "ge-003", "to": "pattern-silent-error", "type": "matches-pattern" },
+
+    { "from": "tk-003", "to": "pattern-no-undo", "type": "matches-pattern" },
+
+    { "from": "nw-002", "to": "pattern-null-crash", "type": "matches-pattern" },
+    { "from": "ge-001", "to": "pattern-null-crash", "type": "matches-pattern" },
+    { "from": "ge-002", "to": "pattern-null-crash", "type": "matches-pattern" },
+    { "from": "ge-004", "to": "pattern-null-crash", "type": "matches-pattern" },
+
+    { "from": "prompt-lab", "to": "pattern-a11y-gaps", "type": "affected-by" },
+    { "from": "shieldbox", "to": "pattern-a11y-gaps", "type": "affected-by" },
+    { "from": "notion-widgets", "to": "pattern-a11y-gaps", "type": "affected-by" },
+    { "from": "graph-explorer", "to": "pattern-a11y-gaps", "type": "affected-by" },
+    { "from": "davehomeassist", "to": "pattern-a11y-gaps", "type": "affected-by" }
+  ]
+}

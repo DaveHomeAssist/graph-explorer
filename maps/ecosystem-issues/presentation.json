@@ -1,0 +1,130 @@
+{
+  "title": "Ecosystem Issue Tracker",
+  "eyebrow": "Cross-Project Health Map — 2026-03-18",
+  "description": "18 active projects, 22 open P1s, 32 open P2s, and 6 shared issue patterns. Projects connect to their open issues; issues connect to the cross-cutting pattern they match.",
+
+  "defaults": {
+    "showHeatmap": false,
+    "initialFocusMode": "All",
+    "initialLayer": "All"
+  },
+
+  "layers": {
+    "Tier 1": "#818cf8",
+    "Tier 2": "#38bdf8",
+    "Tier 3": "#64748b",
+    "P1 Issues": "#ef4444",
+    "Issue Pattern": "#f59e0b"
+  },
+
+  "statusStyles": {
+    "Clean": "#22c55e",
+    "Active": "#818cf8",
+    "At Risk": "#ef4444",
+    "P1": "#ef4444",
+    "P2": "#f59e0b"
+  },
+
+  "layerGlyphs": {
+    "Tier 1": "T1",
+    "Tier 2": "T2",
+    "Tier 3": "T3",
+    "P1 Issues": "P1",
+    "Issue Pattern": "PT"
+  },
+
+  "edgeStyles": {
+    "has-issue": {
+      "stroke": "rgba(239,68,68,0.45)",
+      "dasharray": null
+    },
+    "matches-pattern": {
+      "stroke": "rgba(245,158,11,0.5)",
+      "dasharray": "6,3"
+    },
+    "affected-by": {
+      "stroke": "rgba(245,158,11,0.3)",
+      "dasharray": "4,4"
+    }
+  },
+
+  "legendItems": [
+    { "label": "Tier 1 Project", "color": "#818cf8" },
+    { "label": "Tier 2 Project", "color": "#38bdf8" },
+    { "label": "Tier 3 Project", "color": "#64748b" },
+    { "label": "P1 Issue", "color": "#ef4444" },
+    { "label": "Issue Pattern", "color": "#f59e0b" },
+    { "label": "Clean (no issues)", "color": "#22c55e" }
+  ],
+
+  "inspector": {
+    "fields": [
+      { "key": "type", "label": "Type" },
+      { "key": "layer", "label": "Layer" },
+      { "key": "status", "label": "Status" }
+    ],
+    "metaFields": [
+      { "key": "desc", "label": "Description" }
+    ],
+    "metaArrays": [
+      {
+        "key": "risks",
+        "label": "Open Risks",
+        "emptyText": "No risks logged."
+      },
+      {
+        "key": "nextMoves",
+        "label": "Next Moves",
+        "emptyText": "No next moves planned."
+      }
+    ],
+    "metaChips": ["tags"],
+    "metaLink": "url"
+  },
+
+  "focusModes": [
+    { "id": "All", "label": "All" },
+    {
+      "id": "p1-only",
+      "label": "P1 Issues Only",
+      "filter": { "layers": ["P1 Issues", "Issue Pattern"] }
+    },
+    {
+      "id": "at-risk",
+      "label": "At Risk Projects",
+      "filter": {
+        "ids": [
+          "curlplan", "trailkeeper", "catering", "graph-explorer",
+          "shieldbox", "davehomeassist", "notion-widgets", "freelance"
+        ]
+      }
+    },
+    {
+      "id": "clean",
+      "label": "Clean Projects",
+      "filter": {
+        "ids": [
+          "garden-os", "contractor", "sdlc-map", "gemini-calc",
+          "web-templates", "favicons", "utility", "freelance-landing"
+        ]
+      }
+    },
+    {
+      "id": "patterns",
+      "label": "Issue Patterns",
+      "filter": { "layer": "Issue Pattern" }
+    },
+    {
+      "id": "tier-1",
+      "label": "Tier 1 Projects",
+      "filter": { "layer": "Tier 1" }
+    }
+  ],
+
+  "stats": [
+    { "label": "Visible", "count": "visible" },
+    { "label": "Projects", "filter": { "layers": ["Tier 1", "Tier 2", "Tier 3"] } },
+    { "label": "P1 Issues", "filter": { "layer": "P1 Issues" } },
+    { "label": "Patterns", "filter": { "layer": "Issue Pattern" } }
+  ]
+}
