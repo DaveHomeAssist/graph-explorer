@@ -1,0 +1,317 @@
+{
+  "version": 1,
+  "meta": {
+    "id": "sample-client-ops",
+    "name": "Sample: Client Operations Topology",
+    "version": "1.0",
+    "description": "Sample dataset showing a client-services org — revenue, delivery, support hubs with governance and operational data flows.",
+    "author": "Digital Footprints LLC"
+  },
+  "nodes": [
+    {
+      "id": "exec-home",
+      "label": "Executive Home",
+      "type": "Top Hub",
+      "layer": "Hub",
+      "status": "Active",
+      "meta": {
+        "desc": "Primary entry point for leadership reporting, navigation, and cross-functional review.",
+        "tags": ["dashboard", "leadership", "entry"],
+        "risks": [
+          "Too many KPIs on the front door can hide real exceptions",
+          "Cross-functional links drift if ownership is not explicit"
+        ],
+        "nextMoves": [
+          "Reduce duplicate metric cards across downstream hubs",
+          "Add owner badges to linked operational surfaces"
+        ],
+        "owner": "Chief of Staff"
+      }
+    },
+    {
+      "id": "revenue-hub",
+      "label": "Revenue Hub",
+      "type": "Area Hub",
+      "layer": "Hub",
+      "status": "Active",
+      "meta": {
+        "desc": "Commercial operations hub for pipeline, client records, renewals, and billing handoff.",
+        "tags": ["revenue", "sales", "finance"],
+        "owner": "Revenue Operations"
+      }
+    },
+    {
+      "id": "delivery-hub",
+      "label": "Delivery Hub",
+      "type": "Area Hub",
+      "layer": "Hub",
+      "status": "Active",
+      "meta": {
+        "desc": "Operational hub for active delivery work, escalations, and service quality.",
+        "tags": ["delivery", "operations", "services"],
+        "owner": "Delivery Director"
+      }
+    },
+    {
+      "id": "platform-hub",
+      "label": "Platform Hub",
+      "type": "Area Hub",
+      "layer": "Hub",
+      "status": "Active",
+      "meta": {
+        "desc": "Shared systems hub for governance, templates, and enablement resources.",
+        "tags": ["platform", "governance", "enablement"],
+        "owner": "Platform Lead"
+      }
+    },
+    {
+      "id": "command-center",
+      "label": "Command Center",
+      "type": "Control Panel",
+      "layer": "Hub",
+      "status": "At Risk",
+      "meta": {
+        "desc": "Daily operations control surface consolidating queue, incidents, flagship projects, and review artifacts.",
+        "tags": ["control-panel", "ops", "daily-work"],
+        "risks": [
+          "Operational load is concentrated in a single surface",
+          "Incident noise can obscure project blockers during peak volume",
+          "Governance references are visible but not embedded into workflows"
+        ],
+        "nextMoves": [
+          "Split queue and incident views by urgency tier",
+          "Promote weekly review exceptions into a pinned summary strip",
+          "Add SLA breach indicator for delivery queue cards"
+        ],
+        "owner": "Operations Manager"
+      }
+    },
+    {
+      "id": "support-ops-hub",
+      "label": "Support Ops Hub",
+      "type": "Sub-Hub",
+      "layer": "Hub",
+      "status": "Active",
+      "meta": {
+        "desc": "Support-specific operational surface for escalation handling and resolution resources.",
+        "tags": ["support", "escalations", "operations"],
+        "owner": "Support Lead"
+      }
+    },
+    {
+      "id": "client-accounts-db",
+      "label": "Client Accounts",
+      "type": "Database",
+      "layer": "Database",
+      "status": "Active",
+      "meta": {
+        "desc": "Canonical account registry for client ownership, tiering, and renewal state.",
+        "tags": ["database", "clients", "crm"],
+        "risks": ["Tiering and billing state can diverge if sync jobs lag"],
+        "nextMoves": ["Add automated stale-owner audit"],
+        "owner": "Revenue Operations"
+      }
+    },
+    {
+      "id": "pipeline-db",
+      "label": "Pipeline Tracker",
+      "type": "Database",
+      "layer": "Database",
+      "status": "Active",
+      "meta": {
+        "desc": "Opportunity pipeline with stage, forecast, and close-confidence data.",
+        "tags": ["database", "pipeline", "forecast"],
+        "owner": "Sales Operations"
+      }
+    },
+    {
+      "id": "billing-db",
+      "label": "Billing Ledger",
+      "type": "Database",
+      "layer": "Database",
+      "status": "Needs Review",
+      "meta": {
+        "desc": "Invoice and subscription ledger aligned to account contracts and renewals.",
+        "tags": ["database", "billing", "finance"],
+        "risks": ["Manual adjustments create reconciliation delays"],
+        "nextMoves": ["Automate mismatch report between account tier and invoice plan"],
+        "owner": "Finance Operations"
+      }
+    },
+    {
+      "id": "delivery-queue-db",
+      "label": "Delivery Queue",
+      "type": "Database",
+      "layer": "Database",
+      "status": "Active",
+      "meta": {
+        "desc": "Execution queue for active delivery work, milestones, due dates, and assignees.",
+        "tags": ["database", "delivery", "execution"],
+        "owner": "Delivery Director"
+      }
+    },
+    {
+      "id": "incidents-db",
+      "label": "Incident Backlog",
+      "type": "Database",
+      "layer": "Database",
+      "status": "At Risk",
+      "meta": {
+        "desc": "Quality and incident tracking system for client-facing issues and internal blockers.",
+        "tags": ["database", "incidents", "quality"],
+        "risks": [
+          "Escalation severity is inconsistently applied",
+          "Resolved incidents are not always linked back to root-cause work"
+        ],
+        "nextMoves": [
+          "Add root-cause template to every Sev 1 and Sev 2 item",
+          "Track time-to-triage as a required property"
+        ],
+        "owner": "Support Lead"
+      }
+    },
+    {
+      "id": "decision-log-db",
+      "label": "Decision Log",
+      "type": "Database",
+      "layer": "Governance",
+      "status": "Active",
+      "meta": {
+        "desc": "Governance log for operational, pricing, and delivery decisions with review cadence.",
+        "tags": ["database", "governance", "decisions"],
+        "owner": "Chief of Staff"
+      }
+    },
+    {
+      "id": "standards-db",
+      "label": "Standards Library",
+      "type": "Database",
+      "layer": "Governance",
+      "status": "Active",
+      "meta": {
+        "desc": "Shared standards for naming, SLAs, escalation rules, and reporting definitions.",
+        "tags": ["database", "governance", "standards"],
+        "owner": "Platform Lead"
+      }
+    },
+    {
+      "id": "template-library-db",
+      "label": "Template Library",
+      "type": "Database",
+      "layer": "Governance",
+      "status": "Active",
+      "meta": {
+        "desc": "Reusable operating templates for briefs, handoffs, weekly reviews, and postmortems.",
+        "tags": ["database", "templates", "enablement"],
+        "owner": "Platform Lead"
+      }
+    },
+    {
+      "id": "project-atlas",
+      "label": "Project Atlas",
+      "type": "Project Brief",
+      "layer": "Page",
+      "status": "Active",
+      "meta": {
+        "desc": "Flagship client program page with milestones, risks, and linked delivery artifacts.",
+        "tags": ["project", "client-delivery", "flagship"],
+        "owner": "Program Manager"
+      }
+    },
+    {
+      "id": "project-summit",
+      "label": "Project Summit",
+      "type": "Project Brief",
+      "layer": "Page",
+      "status": "Planned",
+      "meta": {
+        "desc": "Upcoming strategic rollout page used for pre-launch planning and dependency review.",
+        "tags": ["project", "launch", "strategic"],
+        "owner": "Program Manager"
+      }
+    },
+    {
+      "id": "brief-atlas",
+      "label": "Atlas Brief",
+      "type": "Brief",
+      "layer": "Page",
+      "status": "Active",
+      "meta": {
+        "desc": "Structured brief for Atlas scope, stakeholders, timeline, and delivery guardrails.",
+        "tags": ["brief", "atlas"],
+        "owner": "Program Manager"
+      }
+    },
+    {
+      "id": "brief-summit",
+      "label": "Summit Brief",
+      "type": "Brief",
+      "layer": "Page",
+      "status": "Planned",
+      "meta": {
+        "desc": "Structured brief for Summit rollout planning, assumptions, and approvals.",
+        "tags": ["brief", "summit"],
+        "owner": "Program Manager"
+      }
+    },
+    {
+      "id": "weekly-review",
+      "label": "Weekly Review Packet",
+      "type": "Reference Doc",
+      "layer": "Page",
+      "status": "Active",
+      "meta": {
+        "desc": "Leadership review packet summarizing delivery risk, pipeline movement, and billing exceptions.",
+        "tags": ["review", "leadership", "reporting"],
+        "owner": "Chief of Staff"
+      }
+    },
+    {
+      "id": "knowledge-base",
+      "label": "Knowledge Base",
+      "type": "Reference Doc",
+      "layer": "Page",
+      "status": "Needs Review",
+      "meta": {
+        "desc": "Resolution guides, escalation playbooks, and support macros used by the service desk.",
+        "tags": ["support", "documentation", "playbooks"],
+        "risks": ["Articles lag behind process changes during fast-moving quarters"],
+        "nextMoves": ["Add freshness review date to every article"],
+        "owner": "Support Lead"
+      }
+    }
+  ],
+  "edges": [
+    { "from": "exec-home", "to": "revenue-hub", "type": "structure", "meta": { "label": "ROUTES TO" } },
+    { "from": "exec-home", "to": "delivery-hub", "type": "structure", "meta": { "label": "ROUTES TO" } },
+    { "from": "exec-home", "to": "platform-hub", "type": "structure", "meta": { "label": "ROUTES TO" } },
+    { "from": "delivery-hub", "to": "command-center", "type": "structure", "meta": { "label": "OPERATES THROUGH" } },
+    { "from": "delivery-hub", "to": "support-ops-hub", "type": "structure", "meta": { "label": "SUPPORTS" } },
+    { "from": "revenue-hub", "to": "pipeline-db", "type": "structure", "meta": { "label": "TRACKS" } },
+    { "from": "revenue-hub", "to": "client-accounts-db", "type": "structure", "meta": { "label": "MANAGES" } },
+    { "from": "revenue-hub", "to": "billing-db", "type": "structure", "meta": { "label": "REVIEWS" } },
+    { "from": "platform-hub", "to": "standards-db", "type": "reference", "meta": { "label": "DEFINES" } },
+    { "from": "platform-hub", "to": "template-library-db", "type": "reference", "meta": { "label": "PROVIDES" } },
+    { "from": "platform-hub", "to": "decision-log-db", "type": "reference", "meta": { "label": "GOVERNS" } },
+    { "from": "command-center", "to": "delivery-queue-db", "type": "structure", "meta": { "label": "RUNS" } },
+    { "from": "command-center", "to": "incidents-db", "type": "structure", "meta": { "label": "MONITORS" } },
+    { "from": "command-center", "to": "project-atlas", "type": "structure", "meta": { "label": "FEATURES" } },
+    { "from": "command-center", "to": "project-summit", "type": "structure", "meta": { "label": "TRACKS" } },
+    { "from": "command-center", "to": "weekly-review", "type": "reference", "meta": { "label": "SUMMARIZES TO" } },
+    { "from": "command-center", "to": "decision-log-db", "type": "reference", "meta": { "label": "CHECKS" } },
+    { "from": "support-ops-hub", "to": "incidents-db", "type": "structure", "meta": { "label": "WORKS FROM" } },
+    { "from": "support-ops-hub", "to": "knowledge-base", "type": "reference", "meta": { "label": "USES" } },
+    { "from": "pipeline-db", "to": "client-accounts-db", "type": "data", "meta": { "label": "CONVERTS TO" } },
+    { "from": "client-accounts-db", "to": "billing-db", "type": "data", "meta": { "label": "SYNCS" } },
+    { "from": "delivery-queue-db", "to": "project-atlas", "type": "data", "meta": { "label": "ROLLS UP TO" } },
+    { "from": "delivery-queue-db", "to": "weekly-review", "type": "data", "meta": { "label": "FEEDS" } },
+    { "from": "incidents-db", "to": "project-atlas", "type": "data", "meta": { "label": "INFORMS" } },
+    { "from": "incidents-db", "to": "weekly-review", "type": "data", "meta": { "label": "FEEDS" } },
+    { "from": "decision-log-db", "to": "project-atlas", "type": "reference", "meta": { "label": "GUIDES" } },
+    { "from": "decision-log-db", "to": "project-summit", "type": "reference", "meta": { "label": "GUIDES" } },
+    { "from": "standards-db", "to": "decision-log-db", "type": "reference", "meta": { "label": "CONSTRAINS" } },
+    { "from": "template-library-db", "to": "delivery-queue-db", "type": "reference", "meta": { "label": "STANDARDIZES" } },
+    { "from": "project-atlas", "to": "brief-atlas", "type": "reference", "meta": { "label": "DOCUMENTED BY" } },
+    { "from": "project-summit", "to": "brief-summit", "type": "reference", "meta": { "label": "DOCUMENTED BY" } }
+  ]
+}

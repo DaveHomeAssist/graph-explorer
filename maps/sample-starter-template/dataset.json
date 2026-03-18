@@ -1,0 +1,346 @@
+{
+  "version": 1,
+  "meta": {
+    "id": "sample-starter-template",
+    "name": "Sample: Starter Template",
+    "version": "1.0",
+    "description": "Blank-slate template showing the full node/edge schema. Fork this to create a new map — replace placeholder labels with your own topology.",
+    "author": "Digital Footprints LLC"
+  },
+  "nodes": [
+    {
+      "id": "main-dashboard",
+      "label": "Main Dashboard",
+      "type": "Top Hub",
+      "layer": "Hub",
+      "status": "Active",
+      "meta": {
+        "desc": "Primary entry point — replace with your system's top-level navigation surface.",
+        "tags": ["top-level", "dashboard", "navigation"],
+        "risks": [
+          "Example risk: top-level sprawl can make the entry experience feel overloaded",
+          "Example risk: too many downstream branches may weaken dashboard clarity"
+        ],
+        "nextMoves": [
+          "Example move: reduce top-level options to the most-used hubs",
+          "Example move: promote high-frequency destinations into a primary nav group"
+        ]
+      }
+    },
+    {
+      "id": "area-hub-1",
+      "label": "Area Hub 1 (rename me)",
+      "type": "Area Hub",
+      "layer": "Hub",
+      "status": "Active",
+      "meta": {
+        "desc": "Top-level hub for one major domain. Rename to match your org structure.",
+        "tags": ["hub", "area", "placeholder"]
+      }
+    },
+    {
+      "id": "area-hub-2",
+      "label": "Area Hub 2 (rename me)",
+      "type": "Area Hub",
+      "layer": "Hub",
+      "status": "Active",
+      "meta": {
+        "desc": "Top-level hub for a second major domain.",
+        "tags": ["hub", "area", "placeholder"]
+      }
+    },
+    {
+      "id": "area-hub-3",
+      "label": "Area Hub 3 (rename me)",
+      "type": "Area Hub",
+      "layer": "Hub",
+      "status": "Active",
+      "meta": {
+        "desc": "Top-level hub for a third major domain.",
+        "tags": ["hub", "area", "placeholder"]
+      }
+    },
+    {
+      "id": "operations-hub",
+      "label": "Operations Hub (control panel)",
+      "type": "Control Panel",
+      "layer": "Hub",
+      "status": "Active",
+      "meta": {
+        "desc": "Main control panel for operational work. Houses linked views of key databases and references.",
+        "tags": ["control-panel", "operations", "hub"],
+        "risks": [
+          "Example risk: too many linked databases can dilute dashboard clarity",
+          "Example risk: governance pages may drift from execution databases",
+          "Example risk: high dependency concentration makes this a fragile node"
+        ],
+        "nextMoves": [
+          "Example move: audit all linked views for duplication",
+          "Example move: separate daily execution views from governance views"
+        ]
+      }
+    },
+    {
+      "id": "sub-hub-creative",
+      "label": "Sub-Hub: Creative (rename me)",
+      "type": "Sub-Hub",
+      "layer": "Hub",
+      "status": "Active",
+      "meta": {
+        "desc": "Sub-hub for creative or exploratory work.",
+        "tags": ["hub", "creative", "placeholder"]
+      }
+    },
+    {
+      "id": "sub-hub-lifecycle",
+      "label": "Sub-Hub: Lifecycle (rename me)",
+      "type": "Sub-Hub",
+      "layer": "Hub",
+      "status": "Active",
+      "meta": {
+        "desc": "Sub-hub for ongoing operational and lifecycle management.",
+        "tags": ["hub", "lifecycle", "placeholder"]
+      }
+    },
+    {
+      "id": "sub-hub-technology",
+      "label": "Sub-Hub: Technology (rename me)",
+      "type": "Sub-Hub",
+      "layer": "Hub",
+      "status": "Active",
+      "meta": {
+        "desc": "Sub-hub for technology navigation and tooling.",
+        "tags": ["hub", "technology", "placeholder"]
+      }
+    },
+    {
+      "id": "sub-hub-field",
+      "label": "Sub-Hub: Field (rename me)",
+      "type": "Sub-Hub",
+      "layer": "Hub",
+      "status": "Active",
+      "meta": {
+        "desc": "Sub-hub for physical projects, field work, or environment-specific efforts.",
+        "tags": ["hub", "field", "placeholder"]
+      }
+    },
+    {
+      "id": "db-primary-tracker",
+      "label": "DB: Primary Tracker",
+      "type": "Database",
+      "layer": "Database",
+      "status": "Active",
+      "meta": {
+        "desc": "Canonical tracker for primary entities. Work items, issues, and decisions relate back here.",
+        "tags": ["database", "tracker", "core"],
+        "risks": [
+          "Example risk: may become overloaded if entity and execution metadata mix",
+          "Example risk: rollup accuracy depends on relation hygiene across databases"
+        ],
+        "nextMoves": [
+          "Example move: validate all relation fields across dependent systems",
+          "Example move: define required properties for every row"
+        ]
+      }
+    },
+    {
+      "id": "db-work-items",
+      "label": "DB: Work Items",
+      "type": "Database",
+      "layer": "Database",
+      "status": "Active",
+      "meta": {
+        "desc": "Execution layer for active work items across the system.",
+        "tags": ["database", "execution", "work-items"],
+        "risks": [
+          "Example risk: work items without a parent relation create orphan records"
+        ],
+        "nextMoves": [
+          "Example move: enforce required parent relation on new rows"
+        ]
+      }
+    },
+    {
+      "id": "db-issues",
+      "label": "DB: Issues Backlog",
+      "type": "Database",
+      "layer": "Database",
+      "status": "Active",
+      "meta": {
+        "desc": "Quality and issue tracking layer.",
+        "tags": ["database", "quality", "issues"]
+      }
+    },
+    {
+      "id": "db-capture",
+      "label": "DB: Capture Log",
+      "type": "Database",
+      "layer": "Database",
+      "status": "Active",
+      "meta": {
+        "desc": "Intake layer for captured inputs that may produce work or decisions.",
+        "tags": ["database", "capture", "intake"]
+      }
+    },
+    {
+      "id": "db-decisions",
+      "label": "DB: Decisions Log",
+      "type": "Database",
+      "layer": "Database",
+      "status": "Active",
+      "meta": {
+        "desc": "Governance layer for recording structured decisions.",
+        "tags": ["database", "governance", "decisions"],
+        "risks": [
+          "Example risk: decisions without context become uninterpretable over time"
+        ],
+        "nextMoves": [
+          "Example move: add a last-reviewed property",
+          "Example move: create a recurring review workflow"
+        ]
+      }
+    },
+    {
+      "id": "db-standards",
+      "label": "DB: Standards",
+      "type": "Database",
+      "layer": "Governance",
+      "status": "Active",
+      "meta": {
+        "desc": "Tracks naming, terminology, or standards decisions across the system.",
+        "tags": ["database", "governance", "standards"]
+      }
+    },
+    {
+      "id": "db-templates",
+      "label": "DB: Template Library",
+      "type": "Database",
+      "layer": "Governance",
+      "status": "Active",
+      "meta": {
+        "desc": "Library of reusable templates and structured context artifacts.",
+        "tags": ["database", "governance", "templates"]
+      }
+    },
+    {
+      "id": "db-projects",
+      "label": "DB: Projects Registry",
+      "type": "Database",
+      "layer": "Database",
+      "status": "Active",
+      "meta": {
+        "desc": "General registry for systems, initiatives, or subsystems.",
+        "tags": ["database", "projects", "systems"]
+      }
+    },
+    {
+      "id": "db-creative",
+      "label": "DB: Creative Registry",
+      "type": "Database",
+      "layer": "Database",
+      "status": "Active",
+      "meta": {
+        "desc": "Tracks creative or exploratory initiatives.",
+        "tags": ["database", "creative"]
+      }
+    },
+    {
+      "id": "db-lifecycle",
+      "label": "DB: Lifecycle Projects",
+      "type": "Database",
+      "layer": "Database",
+      "status": "Active",
+      "meta": {
+        "desc": "Tracks projects associated with an ongoing lifecycle or operational area.",
+        "tags": ["database", "lifecycle", "projects"]
+      }
+    },
+    {
+      "id": "project-1",
+      "label": "Project 1 (rename me)",
+      "type": "Project Brief",
+      "layer": "Page",
+      "status": "Active",
+      "meta": {
+        "desc": "Front door for a project with linked views, references, and iteration notes.",
+        "tags": ["project", "brief", "placeholder"]
+      }
+    },
+    {
+      "id": "project-2",
+      "label": "Project 2 (rename me)",
+      "type": "Project Brief",
+      "layer": "Page",
+      "status": "Active",
+      "meta": {
+        "desc": "Front door for a second project with linked views and supporting docs.",
+        "tags": ["project", "brief", "placeholder"]
+      }
+    },
+    {
+      "id": "brief-project-1",
+      "label": "Brief: Project 1",
+      "type": "Brief",
+      "layer": "Page",
+      "status": "Active",
+      "meta": {
+        "desc": "Structured brief page for Project 1.",
+        "tags": ["brief", "placeholder"]
+      }
+    },
+    {
+      "id": "brief-project-2",
+      "label": "Brief: Project 2",
+      "type": "Brief",
+      "layer": "Page",
+      "status": "Active",
+      "meta": {
+        "desc": "Structured brief page for Project 2.",
+        "tags": ["brief", "placeholder"]
+      }
+    },
+    {
+      "id": "doc-analysis",
+      "label": "DOC: Reference Analysis",
+      "type": "Reference Doc",
+      "layer": "Page",
+      "status": "Active",
+      "meta": {
+        "desc": "Reference analysis document used for system consolidation and structural decisions.",
+        "tags": ["doc", "analysis", "reference"]
+      }
+    }
+  ],
+  "edges": [
+    { "from": "main-dashboard", "to": "area-hub-1", "type": "structure" },
+    { "from": "main-dashboard", "to": "area-hub-2", "type": "structure" },
+    { "from": "main-dashboard", "to": "area-hub-3", "type": "structure" },
+    { "from": "area-hub-1", "to": "operations-hub", "type": "structure" },
+    { "from": "area-hub-1", "to": "sub-hub-technology", "type": "structure" },
+    { "from": "area-hub-2", "to": "sub-hub-creative", "type": "structure" },
+    { "from": "area-hub-3", "to": "sub-hub-lifecycle", "type": "structure" },
+    { "from": "area-hub-3", "to": "sub-hub-field", "type": "structure" },
+    { "from": "operations-hub", "to": "db-primary-tracker", "type": "structure" },
+    { "from": "operations-hub", "to": "db-work-items", "type": "structure" },
+    { "from": "operations-hub", "to": "db-issues", "type": "structure" },
+    { "from": "operations-hub", "to": "db-capture", "type": "structure" },
+    { "from": "operations-hub", "to": "db-decisions", "type": "structure" },
+    { "from": "operations-hub", "to": "db-projects", "type": "structure" },
+    { "from": "operations-hub", "to": "db-templates", "type": "reference" },
+    { "from": "operations-hub", "to": "project-1", "type": "structure" },
+    { "from": "operations-hub", "to": "project-2", "type": "structure" },
+    { "from": "db-capture", "to": "db-work-items", "type": "data" },
+    { "from": "db-capture", "to": "db-decisions", "type": "data" },
+    { "from": "db-work-items", "to": "db-primary-tracker", "type": "data" },
+    { "from": "db-issues", "to": "db-primary-tracker", "type": "data" },
+    { "from": "db-decisions", "to": "db-primary-tracker", "type": "data" },
+    { "from": "db-standards", "to": "db-decisions", "type": "reference" },
+    { "from": "db-templates", "to": "db-capture", "type": "reference" },
+    { "from": "sub-hub-field", "to": "project-2", "type": "structure" },
+    { "from": "sub-hub-creative", "to": "db-creative", "type": "structure" },
+    { "from": "sub-hub-lifecycle", "to": "db-lifecycle", "type": "structure" },
+    { "from": "project-1", "to": "brief-project-1", "type": "reference" },
+    { "from": "project-2", "to": "brief-project-2", "type": "reference" },
+    { "from": "operations-hub", "to": "doc-analysis", "type": "reference" }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "title": "Sample: Client Operations",
+  "eyebrow": "Acme Services · Ops Topology v1.0",
+  "description": "Sample dataset showing a client-services org structure — revenue pipeline, delivery ops, support escalation, and governance flows.",
+  "layers": {
+    "Hub":        "#818cf8",
+    "Database":   "#38bdf8",
+    "Page":       "#a78bfa",
+    "Governance": "#facc15"
+  },
+  "edgeStyles": {
+    "structure": { "stroke": "rgba(120,145,190,0.35)", "dasharray": null },
+    "data":      { "stroke": "rgba(52,211,153,0.45)", "dasharray": "5,3" },
+    "reference": { "stroke": "rgba(251,146,60,0.4)",  "dasharray": "2,4" }
+  },
+  "inspector": {
+    "fields": [
+      { "key": "type",   "label": "Type" },
+      { "key": "layer",  "label": "Layer" },
+      { "key": "status", "label": "Status" }
+    ],
+    "metaFields": [
+      { "key": "owner", "label": "Owner" }
+    ],
+    "metaArrays": [
+      { "key": "risks",     "label": "Risks",      "emptyText": "No risks logged." },
+      { "key": "nextMoves", "label": "Next Moves",  "emptyText": "No next moves logged." }
+    ],
+    "metaChips": ["tags"],
+    "metaLink": null
+  },
+  "focusModes": [
+    { "id": "All", "label": "All" },
+    {
+      "id": "Revenue Flow",
+      "label": "Revenue Flow",
+      "filter": { "ids": ["exec-home", "revenue-hub", "pipeline-db", "client-accounts-db", "billing-db"] }
+    },
+    {
+      "id": "Delivery Chain",
+      "label": "Delivery Chain",
+      "filter": { "ids": ["delivery-hub", "command-center", "support-ops-hub", "delivery-queue-db", "incidents-db", "project-atlas", "project-summit", "weekly-review"] }
+    },
+    {
+      "id": "Governance",
+      "label": "Governance",
+      "filter": { "ids": ["platform-hub", "decision-log-db", "standards-db", "template-library-db", "command-center"] }
+    },
+    {
+      "id": "Data Flow",
+      "label": "Data Flow",
+      "filter": { "layers": ["Database", "Governance"] }
+    }
+  ],
+  "stats": [
+    { "label": "Visible", "count": "visible" },
+    { "label": "Hubs",    "filter": { "layer": "Hub" } },
+    { "label": "DBs",     "filter": { "layers": ["Database", "Governance"] } },
+    { "label": "Pages",   "filter": { "layer": "Page" } }
+  ]
+}

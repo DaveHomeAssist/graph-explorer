@@ -1,0 +1,53 @@
+{
+  "title": "Sample: Starter Template",
+  "eyebrow": "Graph Explorer · Blank-Slate Template v1.0",
+  "description": "Fork this map to create your own topology. All node types, edge types, and inspector fields are pre-wired — just rename the placeholder labels.",
+  "layers": {
+    "Hub":        "#818cf8",
+    "Database":   "#38bdf8",
+    "Page":       "#a78bfa",
+    "Governance": "#facc15"
+  },
+  "edgeStyles": {
+    "structure": { "stroke": "rgba(120,145,190,0.35)", "dasharray": null },
+    "data":      { "stroke": "rgba(52,211,153,0.45)", "dasharray": "5,3" },
+    "reference": { "stroke": "rgba(251,146,60,0.4)",  "dasharray": "2,4" }
+  },
+  "inspector": {
+    "fields": [
+      { "key": "type",   "label": "Type" },
+      { "key": "layer",  "label": "Layer" },
+      { "key": "status", "label": "Status" }
+    ],
+    "metaArrays": [
+      { "key": "risks",     "label": "Risks",      "emptyText": "No risks logged." },
+      { "key": "nextMoves", "label": "Next Moves",  "emptyText": "No next moves logged." }
+    ],
+    "metaChips": ["tags"],
+    "metaLink": null
+  },
+  "focusModes": [
+    { "id": "All", "label": "All" },
+    {
+      "id": "Hub Structure",
+      "label": "Hub Structure",
+      "filter": { "layers": ["Hub"] }
+    },
+    {
+      "id": "Data Flow",
+      "label": "Data Flow",
+      "filter": { "layers": ["Database", "Governance"], "ids": ["operations-hub"] }
+    },
+    {
+      "id": "Operations Core",
+      "label": "Operations Core",
+      "filter": { "ids": ["operations-hub", "db-primary-tracker", "db-work-items", "db-issues", "db-capture", "db-decisions", "db-standards", "db-templates", "db-projects", "project-1", "project-2", "brief-project-1", "brief-project-2", "doc-analysis"] }
+    }
+  ],
+  "stats": [
+    { "label": "Visible", "count": "visible" },
+    { "label": "Hubs",    "filter": { "layer": "Hub" } },
+    { "label": "DBs",     "filter": { "layers": ["Database", "Governance"] } },
+    { "label": "Pages",   "filter": { "layer": "Page" } }
+  ]
+}

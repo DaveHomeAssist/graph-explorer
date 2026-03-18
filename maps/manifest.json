@@ -27,6 +27,18 @@
       "description": "Sample exported PromptLab run tree using the shared default presentation.",
       "file": "datasets/trace_t_sample__variant_main__2026-03-17T02-00-01-000Z/dataset.json",
       "tags": ["run-tree", "promptlab"]
+    },
+    {
+      "id": "sample-client-ops",
+      "title": "Sample: Client Operations",
+      "description": "Client-services org — revenue, delivery, support hubs with governance and data flows",
+      "tags": ["sample", "operations"]
+    },
+    {
+      "id": "sample-starter-template",
+      "title": "Sample: Starter Template",
+      "description": "Blank-slate template with all node/edge types pre-wired — fork to create your own map",
+      "tags": ["sample", "template"]
     }
   ]
 }
