@@ -1,0 +1,54 @@
+{
+  "title": "Sample: Organization Chart",
+  "eyebrow": "Org Structure v1.0",
+  "description": "Flat org structure with departments, teams, and cross functional collaboration links.",
+  "layers": {
+    "Executive": "#ef4444",
+    "Department": "#f59e0b",
+    "Team": "#3b82f6"
+  },
+  "edgeStyles": {
+    "reports-to": { "stroke": "rgba(107,114,128,0.4)", "dasharray": null },
+    "collaborates": { "stroke": "rgba(16,185,129,0.45)", "dasharray": "6,3" }
+  },
+  "inspector": {
+    "fields": [
+      { "key": "type", "label": "Type" },
+      { "key": "layer", "label": "Layer" },
+      { "key": "status", "label": "Status" }
+    ],
+    "metaFields": [
+      { "key": "owner", "label": "Reports To" }
+    ],
+    "metaArrays": [
+      { "key": "risks", "label": "Risks", "emptyText": "No risks logged." },
+      { "key": "nextMoves", "label": "Next Moves", "emptyText": "No next moves logged." }
+    ],
+    "metaChips": ["tags"],
+    "metaLink": null
+  },
+  "focusModes": [
+    { "id": "All", "label": "All" },
+    {
+      "id": "Engineering",
+      "label": "Engineering",
+      "filter": { "ids": ["vp-engineering", "platform-team", "mobile-team", "infra-team"] }
+    },
+    {
+      "id": "Product",
+      "label": "Product",
+      "filter": { "ids": ["vp-product", "vp-design", "growth-squad", "data-team"] }
+    },
+    {
+      "id": "Cross Functional",
+      "label": "Cross Functional",
+      "filter": { "ids": ["marketing-director", "growth-squad", "sales-director", "support-lead", "data-team", "platform-team", "mobile-team"] }
+    }
+  ],
+  "stats": [
+    { "label": "Visible", "count": "visible" },
+    { "label": "Exec", "filter": { "layer": "Executive" } },
+    { "label": "Depts", "filter": { "layer": "Department" } },
+    { "label": "Teams", "filter": { "layer": "Team" } }
+  ]
+}

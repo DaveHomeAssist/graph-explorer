@@ -1,0 +1,183 @@
+{
+  "version": 1,
+  "meta": {
+    "id": "sample-devops-pipeline",
+    "name": "Sample: DevOps Pipeline",
+    "version": "1.0",
+    "description": "CI/CD pipeline topology with build, test, deploy, and monitoring stages.",
+    "author": "Graph Explorer Samples"
+  },
+  "nodes": [
+    {
+      "id": "source-repo",
+      "label": "Source Repo",
+      "type": "Stage",
+      "layer": "Pipeline",
+      "status": "Active",
+      "meta": {
+        "desc": "Primary Git repository triggering the pipeline on push or merge.",
+        "tags": ["git", "source", "trigger"],
+        "risks": ["Force pushes can skip CI checks"],
+        "nextMoves": ["Add branch protection rules", "Require signed commits"],
+        "owner": "Engineering Lead"
+      }
+    },
+    {
+      "id": "build-server",
+      "label": "Build Server",
+      "type": "Stage",
+      "layer": "Pipeline",
+      "status": "Active",
+      "meta": {
+        "desc": "Compiles source, resolves dependencies, and produces build artifacts.",
+        "tags": ["build", "compile", "ci"],
+        "risks": ["Flaky builds from transient network failures during dependency resolution"],
+        "nextMoves": ["Add build cache layer", "Pin dependency versions"],
+        "owner": "Platform Team"
+      }
+    },
+    {
+      "id": "unit-tests",
+      "label": "Unit Tests",
+      "type": "Stage",
+      "layer": "Pipeline",
+      "status": "Active",
+      "meta": {
+        "desc": "Runs isolated unit tests against the compiled output.",
+        "tags": ["test", "unit", "fast"],
+        "owner": "Engineering Lead"
+      }
+    },
+    {
+      "id": "integration-tests",
+      "label": "Integration Tests",
+      "type": "Stage",
+      "layer": "Pipeline",
+      "status": "Active",
+      "meta": {
+        "desc": "Runs end to end tests against service dependencies and external APIs.",
+        "tags": ["test", "integration", "slow"],
+        "risks": ["External service outages cause false failures"],
+        "nextMoves": ["Add retry logic for transient failures", "Mock external APIs in CI"],
+        "owner": "QA Lead"
+      }
+    },
+    {
+      "id": "artifact-registry",
+      "label": "Artifact Registry",
+      "type": "Service",
+      "layer": "Infrastructure",
+      "status": "Active",
+      "meta": {
+        "desc": "Stores versioned build artifacts, container images, and deployment bundles.",
+        "tags": ["artifacts", "registry", "storage"],
+        "owner": "Platform Team"
+      }
+    },
+    {
+      "id": "staging-deploy",
+      "label": "Staging Deploy",
+      "type": "Stage",
+      "layer": "Pipeline",
+      "status": "Active",
+      "meta": {
+        "desc": "Deploys the latest artifact to the staging environment for validation.",
+        "tags": ["deploy", "staging", "validation"],
+        "owner": "Platform Team"
+      }
+    },
+    {
+      "id": "production-deploy",
+      "label": "Production Deploy",
+      "type": "Stage",
+      "layer": "Pipeline",
+      "status": "Active",
+      "meta": {
+        "desc": "Promotes the validated artifact to production with canary or blue/green rollout.",
+        "tags": ["deploy", "production", "rollout"],
+        "risks": ["Canary metrics lag can mask regressions"],
+        "nextMoves": ["Reduce canary evaluation window", "Add automated rollback trigger"],
+        "owner": "SRE Lead"
+      }
+    },
+    {
+      "id": "monitoring",
+      "label": "Monitoring",
+      "type": "Service",
+      "layer": "Observability",
+      "status": "Active",
+      "meta": {
+        "desc": "Collects metrics, traces, and logs from production services.",
+        "tags": ["monitoring", "metrics", "observability"],
+        "owner": "SRE Lead"
+      }
+    },
+    {
+      "id": "alerting",
+      "label": "Alerting",
+      "type": "Service",
+      "layer": "Observability",
+      "status": "At Risk",
+      "meta": {
+        "desc": "Evaluates monitoring data against thresholds and routes alerts to on call.",
+        "tags": ["alerting", "on-call", "incidents"],
+        "risks": ["Alert fatigue from noisy thresholds", "Missing runbooks for new services"],
+        "nextMoves": ["Audit alert signal to noise ratio", "Require runbook link on all alerts"],
+        "owner": "SRE Lead"
+      }
+    },
+    {
+      "id": "rollback-controller",
+      "label": "Rollback Controller",
+      "type": "Gateway",
+      "layer": "Infrastructure",
+      "status": "Active",
+      "meta": {
+        "desc": "Automated rollback service that reverts production to the last known good state.",
+        "tags": ["rollback", "safety", "automated"],
+        "owner": "Platform Team"
+      }
+    },
+    {
+      "id": "feature-flags",
+      "label": "Feature Flags",
+      "type": "Service",
+      "layer": "Infrastructure",
+      "status": "Active",
+      "meta": {
+        "desc": "Runtime feature toggle service controlling progressive rollout and kill switches.",
+        "tags": ["flags", "rollout", "toggles"],
+        "owner": "Engineering Lead"
+      }
+    },
+    {
+      "id": "secrets-vault",
+      "label": "Secrets Vault",
+      "type": "Service",
+      "layer": "Infrastructure",
+      "status": "Active",
+      "meta": {
+        "desc": "Centralized secrets management providing credentials and certificates to pipeline stages.",
+        "tags": ["secrets", "credentials", "security"],
+        "risks": ["Rotation lag can cause deployment failures"],
+        "nextMoves": ["Automate secret rotation with zero downtime"],
+        "owner": "Security Lead"
+      }
+    }
+  ],
+  "edges": [
+    { "from": "source-repo", "to": "build-server", "type": "flow", "meta": { "label": "TRIGGERS" } },
+    { "from": "build-server", "to": "unit-tests", "type": "flow", "meta": { "label": "RUNS" } },
+    { "from": "unit-tests", "to": "integration-tests", "type": "flow", "meta": { "label": "RUNS" } },
+    { "from": "integration-tests", "to": "artifact-registry", "type": "flow", "meta": { "label": "PUBLISHES TO" } },
+    { "from": "artifact-registry", "to": "staging-deploy", "type": "flow", "meta": { "label": "DEPLOYS TO" } },
+    { "from": "staging-deploy", "to": "production-deploy", "type": "flow", "meta": { "label": "PROMOTES TO" } },
+    { "from": "production-deploy", "to": "monitoring", "type": "dependency", "meta": { "label": "OBSERVED BY" } },
+    { "from": "monitoring", "to": "alerting", "type": "flow", "meta": { "label": "TRIGGERS" } },
+    { "from": "alerting", "to": "rollback-controller", "type": "flow", "meta": { "label": "INVOKES" } },
+    { "from": "rollback-controller", "to": "staging-deploy", "type": "feedback", "meta": { "label": "ROLLS BACK TO" } },
+    { "from": "feature-flags", "to": "production-deploy", "type": "dependency", "meta": { "label": "GATES" } },
+    { "from": "secrets-vault", "to": "build-server", "type": "dependency", "meta": { "label": "PROVIDES CREDENTIALS" } },
+    { "from": "secrets-vault", "to": "staging-deploy", "type": "dependency", "meta": { "label": "PROVIDES CREDENTIALS" } }
+  ]
+}

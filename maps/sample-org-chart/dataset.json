@@ -1,0 +1,178 @@
+{
+  "version": 1,
+  "meta": {
+    "id": "sample-org-chart",
+    "name": "Sample: Organization Chart",
+    "version": "1.0",
+    "description": "Flat org structure with departments, teams, and cross functional links.",
+    "author": "Graph Explorer Samples"
+  },
+  "nodes": [
+    {
+      "id": "ceo",
+      "label": "CEO",
+      "type": "Person",
+      "layer": "Executive",
+      "status": "Active",
+      "meta": {
+        "desc": "Chief Executive Officer responsible for company strategy, culture, and board reporting.",
+        "tags": ["leadership", "strategy", "executive"],
+        "owner": "Board of Directors"
+      }
+    },
+    {
+      "id": "vp-engineering",
+      "label": "VP Engineering",
+      "type": "Person",
+      "layer": "Executive",
+      "status": "Active",
+      "meta": {
+        "desc": "Leads all engineering functions including platform, mobile, and infrastructure teams.",
+        "tags": ["engineering", "leadership"],
+        "risks": ["Team capacity stretched across too many concurrent initiatives"],
+        "nextMoves": ["Prioritize platform stability over new feature work this quarter"],
+        "owner": "CEO"
+      }
+    },
+    {
+      "id": "vp-product",
+      "label": "VP Product",
+      "type": "Person",
+      "layer": "Executive",
+      "status": "Active",
+      "meta": {
+        "desc": "Owns product roadmap, feature prioritization, and user research.",
+        "tags": ["product", "leadership", "roadmap"],
+        "owner": "CEO"
+      }
+    },
+    {
+      "id": "vp-design",
+      "label": "VP Design",
+      "type": "Person",
+      "layer": "Executive",
+      "status": "Active",
+      "meta": {
+        "desc": "Leads brand, UX, and design systems across all product surfaces.",
+        "tags": ["design", "ux", "leadership"],
+        "owner": "CEO"
+      }
+    },
+    {
+      "id": "marketing-director",
+      "label": "Marketing Director",
+      "type": "Department",
+      "layer": "Department",
+      "status": "Active",
+      "meta": {
+        "desc": "Runs growth campaigns, content, events, and brand positioning.",
+        "tags": ["marketing", "growth", "brand"],
+        "owner": "CEO"
+      }
+    },
+    {
+      "id": "sales-director",
+      "label": "Sales Director",
+      "type": "Department",
+      "layer": "Department",
+      "status": "Active",
+      "meta": {
+        "desc": "Manages outbound sales, partnerships, and revenue targets.",
+        "tags": ["sales", "revenue", "partnerships"],
+        "owner": "CEO"
+      }
+    },
+    {
+      "id": "support-lead",
+      "label": "Support Lead",
+      "type": "Department",
+      "layer": "Department",
+      "status": "Active",
+      "meta": {
+        "desc": "Manages customer support operations, ticket triage, and escalation workflows.",
+        "tags": ["support", "customers", "escalations"],
+        "risks": ["Response time degrades during product launches"],
+        "nextMoves": ["Add surge staffing plan for launch windows"],
+        "owner": "CEO"
+      }
+    },
+    {
+      "id": "data-team",
+      "label": "Data Team",
+      "type": "Squad",
+      "layer": "Team",
+      "status": "Active",
+      "meta": {
+        "desc": "Analytics, data pipelines, and business intelligence for product and revenue teams.",
+        "tags": ["data", "analytics", "bi"],
+        "owner": "VP Product"
+      }
+    },
+    {
+      "id": "platform-team",
+      "label": "Platform Team",
+      "type": "Squad",
+      "layer": "Team",
+      "status": "Active",
+      "meta": {
+        "desc": "Shared infrastructure, CI/CD, developer tooling, and service reliability.",
+        "tags": ["platform", "infrastructure", "devtools"],
+        "owner": "VP Engineering"
+      }
+    },
+    {
+      "id": "growth-squad",
+      "label": "Growth Squad",
+      "type": "Squad",
+      "layer": "Team",
+      "status": "Active",
+      "meta": {
+        "desc": "Cross functional squad focused on activation, retention, and expansion metrics.",
+        "tags": ["growth", "experiments", "metrics"],
+        "owner": "VP Product"
+      }
+    },
+    {
+      "id": "mobile-team",
+      "label": "Mobile Team",
+      "type": "Squad",
+      "layer": "Team",
+      "status": "Active",
+      "meta": {
+        "desc": "Native iOS and Android development with shared component library.",
+        "tags": ["mobile", "ios", "android"],
+        "owner": "VP Engineering"
+      }
+    },
+    {
+      "id": "infra-team",
+      "label": "Infrastructure Team",
+      "type": "Squad",
+      "layer": "Team",
+      "status": "Active",
+      "meta": {
+        "desc": "Cloud infrastructure, networking, security, and cost optimization.",
+        "tags": ["infrastructure", "cloud", "security"],
+        "owner": "VP Engineering"
+      }
+    }
+  ],
+  "edges": [
+    { "from": "ceo", "to": "vp-engineering", "type": "reports-to", "meta": { "label": "REPORTS TO" } },
+    { "from": "ceo", "to": "vp-product", "type": "reports-to", "meta": { "label": "REPORTS TO" } },
+    { "from": "ceo", "to": "vp-design", "type": "reports-to", "meta": { "label": "REPORTS TO" } },
+    { "from": "ceo", "to": "marketing-director", "type": "reports-to", "meta": { "label": "REPORTS TO" } },
+    { "from": "ceo", "to": "sales-director", "type": "reports-to", "meta": { "label": "REPORTS TO" } },
+    { "from": "ceo", "to": "support-lead", "type": "reports-to", "meta": { "label": "REPORTS TO" } },
+    { "from": "vp-engineering", "to": "platform-team", "type": "reports-to", "meta": { "label": "LEADS" } },
+    { "from": "vp-engineering", "to": "mobile-team", "type": "reports-to", "meta": { "label": "LEADS" } },
+    { "from": "vp-engineering", "to": "infra-team", "type": "reports-to", "meta": { "label": "LEADS" } },
+    { "from": "vp-product", "to": "growth-squad", "type": "reports-to", "meta": { "label": "LEADS" } },
+    { "from": "vp-product", "to": "data-team", "type": "reports-to", "meta": { "label": "LEADS" } },
+    { "from": "marketing-director", "to": "growth-squad", "type": "collaborates", "meta": { "label": "COLLABORATES" } },
+    { "from": "sales-director", "to": "support-lead", "type": "collaborates", "meta": { "label": "COLLABORATES" } },
+    { "from": "data-team", "to": "platform-team", "type": "collaborates", "meta": { "label": "COLLABORATES" } },
+    { "from": "support-lead", "to": "mobile-team", "type": "collaborates", "meta": { "label": "COLLABORATES" } },
+    { "from": "vp-design", "to": "growth-squad", "type": "collaborates", "meta": { "label": "COLLABORATES" } }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "title": "Sample: DevOps Pipeline",
+  "eyebrow": "CI/CD Topology v1.0",
+  "description": "Build, test, deploy, and monitoring stages with rollback and feature flag controls.",
+  "layers": {
+    "Pipeline": "#3b82f6",
+    "Infrastructure": "#8b5cf6",
+    "Observability": "#10b981"
+  },
+  "edgeStyles": {
+    "flow": { "stroke": "rgba(59,130,246,0.45)", "dasharray": null },
+    "dependency": { "stroke": "rgba(139,92,246,0.4)", "dasharray": "6,3" },
+    "feedback": { "stroke": "rgba(245,158,11,0.45)", "dasharray": "4,4" }
+  },
+  "inspector": {
+    "fields": [
+      { "key": "type", "label": "Type" },
+      { "key": "layer", "label": "Layer" },
+      { "key": "status", "label": "Status" }
+    ],
+    "metaFields": [
+      { "key": "owner", "label": "Owner" }
+    ],
+    "metaArrays": [
+      { "key": "risks", "label": "Risks", "emptyText": "No risks logged." },
+      { "key": "nextMoves", "label": "Next Moves", "emptyText": "No next moves logged." }
+    ],
+    "metaChips": ["tags"],
+    "metaLink": null
+  },
+  "focusModes": [
+    { "id": "All", "label": "All" },
+    {
+      "id": "Build Chain",
+      "label": "Build Chain",
+      "filter": { "ids": ["source-repo", "build-server", "unit-tests", "integration-tests", "artifact-registry", "secrets-vault"] }
+    },
+    {
+      "id": "Deploy Chain",
+      "label": "Deploy Chain",
+      "filter": { "ids": ["artifact-registry", "staging-deploy", "production-deploy", "feature-flags", "rollback-controller"] }
+    },
+    {
+      "id": "Observability",
+      "label": "Observability",
+      "filter": { "ids": ["production-deploy", "monitoring", "alerting", "rollback-controller"] }
+    }
+  ],
+  "stats": [
+    { "label": "Visible", "count": "visible" },
+    { "label": "Pipeline", "filter": { "layer": "Pipeline" } },
+    { "label": "Infra", "filter": { "layer": "Infrastructure" } },
+    { "label": "Obs", "filter": { "layer": "Observability" } }
+  ]
+}

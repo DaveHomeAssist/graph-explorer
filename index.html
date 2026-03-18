@@ -80,7 +80,8 @@
     .icon-btn:focus-visible,
     .map-select:focus-visible,
     .path-clear:focus-visible,
-    .path-target-select:focus-visible {
+    .path-target-select:focus-visible,
+    .path-history-select:focus-visible {
       outline: none;
       box-shadow: 0 0 0 2px rgba(129,140,248,0.32);
       color: var(--text);
@@ -92,6 +93,8 @@
       font-family: 'DM Sans', sans-serif; white-space: nowrap; transition: color 130ms;
     }
     .icon-btn:hover { color: var(--text); }
+    .icon-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .icon-btn:disabled:hover { color: var(--muted); }
 
     .main { display: grid; grid-template-columns: 1fr 290px; gap: 14px; align-items: start; }
 
@@ -249,6 +252,11 @@
       color: var(--text); padding: 4px 8px; font-size: 11.5px; font-family: 'DM Sans', sans-serif; cursor: pointer; max-width: 200px;
     }
     .path-target-select option { background: var(--panel); }
+    .path-history-select {
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      color: var(--text); padding: 4px 8px; font-size: 11.5px; font-family: 'DM Sans', sans-serif; cursor: pointer; max-width: 190px;
+    }
+    .path-history-select option { background: var(--panel); }
     .quality-badge {
       display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
       background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
@@ -411,6 +419,8 @@
       <select id="layerF"></select>
     </div>
     <div class="seg" id="focusModes"></div>
+    <button class="icon-btn" id="undoBtn" disabled>↶ Undo</button>
+    <button class="icon-btn" id="redoBtn" disabled>↷ Redo</button>
     <button class="icon-btn" id="themeBtn">Theme</button>
     <button class="icon-btn" id="heatBtn">🌡 Heatmap</button>
     <button class="icon-btn" id="pathBtn">⤳ Path</button>
@@ -423,6 +433,7 @@
     <span class="path-chip source" id="pathSource">—</span>
     <span class="path-arrow">→</span>
     <select class="path-target-select" id="pathTargetSelect"><option value="">Select target…</option></select>
+    <select class="path-history-select" id="pathHistorySelect"><option value="">Recent paths…</option></select>
     <span class="path-result" id="pathResult"></span>
     <button class="path-clear" id="pathClear">✕ Clear</button>
   </div>
@@ -474,6 +485,9 @@ const DEFAULT_PRESENTATION_PATH = 'maps/default-presentation.json';
 const NW = 220;
 const NH = 88;
 const THEME_KEY = 'graph-explorer-theme';
+const MAP_STATE_KEY = 'ge-map-states-v1';
+const PATH_HISTORY_KEY = 'ge-path-history-v1';
+const UNDO_LIMIT = 10;
 
 // ── Graph State ──────────────────────────────────────────────────────────────
 let manifest = null;
@@ -487,6 +501,11 @@ let degree = {};
 let maxDegree = 0;
 let currentMapId = null;
 let validationWarnings = [];
+let pathHistory = [];
+let undoStack = [];
+let redoStack = [];
+let historySuspend = false;
+let lastRecordedPathKey = '';
 
 const state = {
   search: '',
@@ -503,6 +522,163 @@ const state = {
 let pathNodeIds = new Set();
 let pathEdgeKeys = new Set();  // "from→to" keys
 let pathSteps = [];            // ordered node IDs in the path
+
+function safeReadJson(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function safeWriteJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
+}
+
+function snapshotState() {
+  return {
+    search: state.search,
+    layer: state.layer,
+    focus: state.focus,
+    selectedId: state.selectedId,
+    focusNode: state.focusNode,
+    heatmap: state.heatmap,
+    pathMode: state.pathMode,
+    pathTarget: state.pathTarget,
+  };
+}
+
+function syncControlsFromState() {
+  const searchEl = document.getElementById('search');
+  const layerEl = document.getElementById('layerF');
+  const heatBtn = document.getElementById('heatBtn');
+  const pathBtn = document.getElementById('pathBtn');
+  if (searchEl) searchEl.value = state.search || '';
+  if (layerEl) layerEl.value = state.layer || 'All';
+  if (heatBtn) heatBtn.textContent = state.heatmap ? '🌡 Heatmap ON' : '🌡 Heatmap';
+  if (pathBtn) pathBtn.textContent = state.pathMode ? '⤳ Path ON' : '⤳ Path';
+}
+
+function updateUndoButtons() {
+  const undoBtn = document.getElementById('undoBtn');
+  const redoBtn = document.getElementById('redoBtn');
+  if (undoBtn) undoBtn.disabled = undoStack.length === 0;
+  if (redoBtn) redoBtn.disabled = redoStack.length === 0;
+}
+
+function pushUndoSnapshot() {
+  if (historySuspend || !currentMapId) return;
+  const next = { mapId: currentMapId, state: snapshotState() };
+  const last = undoStack[undoStack.length - 1];
+  if (last && JSON.stringify(last) === JSON.stringify(next)) return;
+  undoStack.push(next);
+  if (undoStack.length > UNDO_LIMIT) undoStack.shift();
+  redoStack = [];
+  updateUndoButtons();
+}
+
+function restoreStateSnapshot(entry) {
+  if (!entry || entry.mapId !== currentMapId || !entry.state) return;
+  historySuspend = true;
+  Object.assign(state, entry.state);
+  syncControlsFromState();
+  layoutCache = null;
+  historySuspend = false;
+  render(false);
+  updateUndoButtons();
+}
+
+function performUndo() {
+  if (!undoStack.length) return;
+  const entry = undoStack.pop();
+  redoStack.push({ mapId: currentMapId, state: snapshotState() });
+  restoreStateSnapshot(entry);
+}
+
+function performRedo() {
+  if (!redoStack.length) return;
+  const entry = redoStack.pop();
+  undoStack.push({ mapId: currentMapId, state: snapshotState() });
+  restoreStateSnapshot(entry);
+}
+
+function readMapBookmarks() {
+  return safeReadJson(MAP_STATE_KEY, {});
+}
+
+function writeMapBookmark() {
+  if (!currentMapId) return;
+  const bookmarks = readMapBookmarks();
+  bookmarks[currentMapId] = snapshotState();
+  safeWriteJson(MAP_STATE_KEY, bookmarks);
+}
+
+function restoreMapBookmark(mapId) {
+  const bookmarks = readMapBookmarks();
+  const entry = bookmarks[mapId];
+  if (!entry) return false;
+  Object.assign(state, {
+    search: entry.search || '',
+    layer: entry.layer || 'All',
+    focus: entry.focus || 'All',
+    selectedId: nodeMap[entry.selectedId] ? entry.selectedId : (nodes[0]?.id || null),
+    focusNode: nodeMap[entry.focusNode] ? entry.focusNode : null,
+    heatmap: !!entry.heatmap,
+    pathMode: !!entry.pathMode,
+    pathTarget: nodeMap[entry.pathTarget] ? entry.pathTarget : null,
+  });
+  syncControlsFromState();
+  return true;
+}
+
+function loadPathHistory() {
+  const stored = safeReadJson(PATH_HISTORY_KEY, []);
+  pathHistory = Array.isArray(stored) ? stored : [];
+}
+
+function savePathHistory() {
+  safeWriteJson(PATH_HISTORY_KEY, pathHistory);
+}
+
+function recordPathHistory() {
+  if (!currentMapId || !state.pathMode || !state.selectedId || !state.pathTarget || pathSteps.length < 2) return;
+  const key = `${currentMapId}:${state.selectedId}:${state.pathTarget}`;
+  if (lastRecordedPathKey === key) return;
+  lastRecordedPathKey = key;
+  const source = nodeMap[state.selectedId];
+  const target = nodeMap[state.pathTarget];
+  pathHistory = [
+    {
+      key,
+      mapId: currentMapId,
+      selectedId: state.selectedId,
+      pathTarget: state.pathTarget,
+      label: `${source?.label || state.selectedId} → ${target?.label || state.pathTarget}`,
+      timestamp: new Date().toISOString(),
+    },
+    ...pathHistory.filter((entry) => entry.key !== key),
+  ].slice(0, 5);
+  savePathHistory();
+}
+
+function updatePathHistorySelect() {
+  const select = document.getElementById('pathHistorySelect');
+  if (!select) return;
+  const items = pathHistory.filter((entry) => entry.mapId === currentMapId);
+  select.innerHTML = '<option value="">Recent paths…</option>';
+  items.forEach((entry) => {
+    const option = document.createElement('option');
+    option.value = entry.key;
+    option.textContent = entry.label;
+    select.appendChild(option);
+  });
+  select.value = '';
+}
 
 // ── URL State Sync ───────────────────────────────────────────────────────────
 function readStateFromUrl() {
@@ -601,9 +777,11 @@ function updatePathBar() {
   const sourceEl = document.getElementById('pathSource');
   const resultEl = document.getElementById('pathResult');
   const targetSel = document.getElementById('pathTargetSelect');
+  const historySel = document.getElementById('pathHistorySelect');
 
   if (!state.pathMode) {
     bar.style.display = 'none';
+    if (historySel) historySel.value = '';
     return;
   }
   bar.style.display = 'flex';
@@ -632,6 +810,7 @@ function updatePathBar() {
   } else {
     resultEl.textContent = 'No path found';
   }
+  updatePathHistorySelect();
 }
 
 // ── Status Display ───────────────────────────────────────────────────────────
@@ -760,6 +939,10 @@ async function loadMapPack(mapOrId) {
 
     // Install data
     currentMapId = entry.id;
+    lastRecordedPathKey = '';
+    undoStack = [];
+    redoStack = [];
+    updateUndoButtons();
     nodes = dataset.nodes;
     edges = dataset.edges;
     presentation = pres;
@@ -796,11 +979,9 @@ async function loadMapPack(mapOrId) {
       pathMode: false,
       pathTarget: null,
     });
-    document.getElementById('pathBtn').textContent = '⤳ Path';
-
-    document.getElementById('search').value = '';
-    document.getElementById('heatBtn').textContent = defaultHeatmap ? '🌡 Heatmap ON' : '🌡 Heatmap';
+    syncControlsFromState();
     layoutCache = null;
+    restoreMapBookmark(entry.id);
 
     // Apply presentation chrome
     document.getElementById('eyebrow').textContent = '🗂 ' + (pres.eyebrow || 'Graph Explorer');
@@ -1065,6 +1246,7 @@ function renderFocusModes() {
     b.textContent = m.label;
     if (state.focus === m.id) b.classList.add('active');
     b.onclick = () => {
+      pushUndoSnapshot();
       state.focus = m.id;
       state.focusNode = null;
       layoutCache = null;
@@ -1405,6 +1587,7 @@ function renderDetail(visIds) {
 // ── Render: Orchestrator ─────────────────────────────────────────────────────
 function render(refit = true) {
   computePathHighlights();
+  recordPathHistory();
   updatePathBar();
   renderFocusModes();
   const visIds = getVisibleIds();
@@ -1416,6 +1599,7 @@ function render(refit = true) {
     fitToView(layoutCache.w, layoutCache.h);
   }
   writeStateToUrl();
+  writeMapBookmark();
 }
 
 // ── Utilities ────────────────────────────────────────────────────────────────
@@ -1442,9 +1626,6 @@ function setupMapSelector(maps, initialId) {
     const entry = getMapEntry(sel.value);
     const ok = await loadMapPack(entry);
     if (ok) {
-      // Clear node-specific URL state on map switch
-      state.selectedId = nodes[0]?.id || null;
-      state.focusNode = null;
       render();
     }
   });
@@ -1457,6 +1638,7 @@ let st;
 document.getElementById('search').addEventListener('input', e => {
   clearTimeout(st);
   st = setTimeout(() => {
+    pushUndoSnapshot();
     state.search = e.target.value.trim();
     state.focusNode = null;
     layoutCache = null;
@@ -1465,6 +1647,7 @@ document.getElementById('search').addEventListener('input', e => {
 });
 
 document.getElementById('layerF').addEventListener('change', e => {
+  pushUndoSnapshot();
   state.layer = e.target.value;
   state.focusNode = null;
   layoutCache = null;
@@ -1486,20 +1669,35 @@ document.getElementById('themeBtn').addEventListener('click', () => {
 });
 
 document.getElementById('pathBtn').addEventListener('click', () => {
+  pushUndoSnapshot();
   state.pathMode = !state.pathMode;
-  if (!state.pathMode) { state.pathTarget = null; }
+  if (!state.pathMode) { state.pathTarget = null; lastRecordedPathKey = ''; }
   document.getElementById('pathBtn').textContent = state.pathMode ? '⤳ Path ON' : '⤳ Path';
   render(false);
 });
 
 document.getElementById('pathTargetSelect').addEventListener('change', e => {
+  pushUndoSnapshot();
   state.pathTarget = e.target.value || null;
   render(false);
 });
 
+document.getElementById('pathHistorySelect').addEventListener('change', e => {
+  const entry = pathHistory.find((item) => item.key === e.target.value && item.mapId === currentMapId);
+  if (!entry) return;
+  pushUndoSnapshot();
+  state.selectedId = entry.selectedId;
+  state.pathMode = true;
+  state.pathTarget = entry.pathTarget;
+  layoutCache = null;
+  render(false);
+});
+
 document.getElementById('pathClear').addEventListener('click', () => {
+  pushUndoSnapshot();
   state.pathMode = false;
   state.pathTarget = null;
+  lastRecordedPathKey = '';
   document.getElementById('pathBtn').textContent = '⤳ Path';
   render(false);
 });
@@ -1510,6 +1708,7 @@ document.getElementById('fitBtn').addEventListener('click', () => {
 
 document.getElementById('resetBtn').addEventListener('click', () => {
   clearTimeout(st);
+  pushUndoSnapshot();
   const defaults = presentation.defaults || {};
   Object.assign(state, {
     search: '',
@@ -1521,12 +1720,29 @@ document.getElementById('resetBtn').addEventListener('click', () => {
     pathMode: false,
     pathTarget: null,
   });
-  document.getElementById('search').value = '';
-  document.getElementById('layerF').value = state.layer;
-  document.getElementById('heatBtn').textContent = state.heatmap ? '🌡 Heatmap ON' : '🌡 Heatmap';
-  document.getElementById('pathBtn').textContent = '⤳ Path';
+  lastRecordedPathKey = '';
+  syncControlsFromState();
   layoutCache = null;
   render();
+});
+
+document.getElementById('undoBtn').addEventListener('click', performUndo);
+document.getElementById('redoBtn').addEventListener('click', performRedo);
+
+document.addEventListener('keydown', (event) => {
+  const meta = event.metaKey || event.ctrlKey;
+  if (!meta) return;
+  const tag = event.target?.tagName?.toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+  if (event.key.toLowerCase() === 'z' && !event.shiftKey) {
+    event.preventDefault();
+    performUndo();
+    return;
+  }
+  if (event.key.toLowerCase() === 'z' && event.shiftKey) {
+    event.preventDefault();
+    performRedo();
+  }
 });
 
 // Bind initial node group handlers
@@ -1536,6 +1752,8 @@ document.getElementById('nodeGroup').onclick = handleNodeClick;
 // ── Boot ─────────────────────────────────────────────────────────────────────
 (async function boot() {
   const urlState = readStateFromUrl();
+  loadPathHistory();
+  updateUndoButtons();
 
   // 1. Load manifest
   const m = await loadManifest();

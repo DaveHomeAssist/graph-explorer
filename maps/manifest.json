@@ -39,6 +39,18 @@
       "title": "Sample: Starter Template",
       "description": "Blank-slate template with all node/edge types pre-wired — fork to create your own map",
       "tags": ["sample", "template"]
+    },
+    {
+      "id": "sample-devops-pipeline",
+      "title": "Sample: DevOps Pipeline",
+      "description": "CI/CD pipeline topology with build, test, deploy, and monitoring stages",
+      "tags": ["sample", "devops"]
+    },
+    {
+      "id": "sample-org-chart",
+      "title": "Sample: Organization Chart",
+      "description": "Flat org structure with departments, teams, and cross functional links",
+      "tags": ["sample", "org"]
     }
   ]
 }
