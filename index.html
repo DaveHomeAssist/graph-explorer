@@ -38,6 +38,23 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; }
     html, body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100%; }
     body { padding: 18px; }
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: auto;
+      z-index: 10000;
+      padding: 8px 16px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 14px;
+      background: #121c2c;
+      color: #e4ecf8;
+    }
+    .skip-link:focus {
+      left: 10px;
+      top: 10px;
+      outline: 2px solid currentColor;
+    }
 
     .page { max-width: 1640px; margin: 0 auto; display: grid; gap: 14px; }
 
@@ -132,7 +149,7 @@
     }
 
     .map-wrap {
-      overflow: hidden; cursor: grab; min-height: 640px; height: 72vh; position: relative;
+      overflow: hidden; cursor: grab; min-height: min(640px, 70vh); height: 72vh; position: relative;
       background:
         radial-gradient(circle at 15% 20%, rgba(129,140,248,0.07), transparent 35%),
         radial-gradient(circle at 82% 65%, rgba(52,211,153,0.05), transparent 35%),
@@ -407,6 +424,7 @@
   </style>
 </head>
 <body>
+<a href="#app" class="skip-link">Skip to content</a>
 <div class="sr-only" id="announce" aria-live="polite"></div>
 <main class="page" id="app">
   <header class="hero">
