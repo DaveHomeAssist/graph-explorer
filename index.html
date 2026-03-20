@@ -99,6 +99,9 @@
       font-size: 15px; display: flex; align-items: center; justify-content: center;
     }
     .float-btn:hover { background: var(--panel-2); }
+    .export-popover { position:absolute;bottom:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px;display:flex;flex-direction:column;gap:2px;min-width:80px; }
+    .export-opt { border:none;background:transparent;color:var(--text);padding:5px 12px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;border-radius:4px;text-align:left; }
+    .export-opt:hover { background:var(--panel-2); }
 
     .stat {
       background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
@@ -224,6 +227,21 @@
       transform: translateX(calc(100% + 14px)); transition: transform 0.2s ease;
     }
     .detail.is-open { transform: translateX(0); }
+    .theme-editor {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 12px; position: absolute; top: 0; left: 0; width: 300px;
+      max-height: calc(100vh - 36px); overflow-y: auto; z-index: 15;
+      transform: translateX(calc(-100% - 14px)); transition: transform 0.2s ease;
+    }
+    .theme-editor.is-open { transform: translateX(0); }
+    .te-section { margin-bottom: 12px; }
+    .te-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
+    .te-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+    .te-row input[type="color"] { width: 28px; height: 22px; border: 1px solid var(--border); border-radius: 4px; background: transparent; cursor: pointer; padding: 0; }
+    .te-row input[type="text"], .te-row textarea { flex: 1; background: var(--panel-2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); padding: 4px 8px; font-size: 11px; font-family: 'DM Sans', sans-serif; }
+    .te-row textarea { resize: vertical; min-height: 40px; }
+    .te-export-btn { border: 1px solid rgba(129,140,248,0.3); background: rgba(129,140,248,0.08); color: #a5b4fc; padding: 5px 14px; border-radius: 6px; font-size: 11px; font-family: 'DM Mono', monospace; cursor: pointer; }
+    .te-export-btn:hover { background: rgba(129,140,248,0.18); }
     .detail-close { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; border: none; background: var(--panel-2); color: var(--muted); border-radius: 4px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; z-index: 1; }
     .detail-close:hover { background: var(--panel); color: var(--text); }
     .detail::-webkit-scrollbar { width: 3px; }
@@ -517,6 +535,16 @@
           <button class="float-btn" id="fitBtn" title="Fit to view">⊡</button>
           <button class="float-btn" id="heatBtn" title="Toggle heatmap">🌡</button>
           <button class="float-btn" id="themeBtn" title="Toggle theme">☀</button>
+          <button class="float-btn" id="shareBtn" title="Copy share link">🔗</button>
+          <button class="float-btn" id="themeEditorBtn" title="Theme editor">🎨</button>
+          <div style="position:relative">
+            <button class="float-btn" id="exportBtn" title="Export">📥</button>
+            <div class="export-popover" id="exportPopover" hidden>
+              <button class="export-opt" data-fmt="svg">SVG</button>
+              <button class="export-opt" data-fmt="png">PNG</button>
+              <button class="export-opt" data-fmt="json">JSON</button>
+            </div>
+          </div>
         </div>
         <svg id="map" role="img" aria-label="Graph explorer system map">
           <defs id="markerDefs"></defs>
@@ -535,6 +563,10 @@
       </div>
     </section>
 
+    <aside class="theme-editor" id="themeEditor">
+      <button class="detail-close" id="themeEditorClose" title="Close editor">✕</button>
+      <div class="d-stack" id="themeEditorPanel"></div>
+    </aside>
     <aside class="detail" id="detailDrawer">
       <button class="detail-close" id="detailClose" title="Close panel">✕</button>
       <div class="d-stack" id="detailPanel"></div>
@@ -591,6 +623,56 @@ function announce(msg) {
   if (!el) return;
   el.textContent = '';
   requestAnimationFrame(() => { el.textContent = msg; });
+}
+
+function showToast(msg) {
+  announce(msg);
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface,#0d1420);color:var(--text,#e4ecf8);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:8px 18px;font-size:13px;font-family:"DM Sans",sans-serif;z-index:9999;opacity:1;transition:opacity 0.3s;pointer-events:none;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2200);
+}
+
+// ── Export Functions ──────────────────────────────────────────────────────────
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportSVG() {
+  const svgEl = document.getElementById('map');
+  if (!svgEl) return;
+  const clone = svgEl.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  clone.removeAttribute('role'); clone.removeAttribute('aria-label');
+  const xml = new XMLSerializer().serializeToString(clone);
+  downloadBlob(new Blob([xml], {type:'image/svg+xml'}), (currentMapId||'graph')+'-plot.svg');
+  showToast('SVG exported');
+}
+
+function exportPNG() {
+  const svgEl = document.getElementById('map');
+  if (!svgEl) return;
+  const clone = svgEl.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  const xml = new XMLSerializer().serializeToString(clone);
+  const img = new Image();
+  const w = svgEl.clientWidth * 2, h = svgEl.clientHeight * 2;
+  img.onload = function() {
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const ctx = c.getContext('2d'); ctx.fillStyle = '#070b12'; ctx.fillRect(0,0,w,h);
+    ctx.drawImage(img, 0, 0, w, h);
+    c.toBlob(function(blob) { downloadBlob(blob, (currentMapId||'graph')+'-plot.png'); showToast('PNG exported'); });
+  };
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+}
+
+function exportJSON() {
+  const snap = { version: 1, mapId: currentMapId, state: snapshotState(), timestamp: new Date().toISOString() };
+  downloadBlob(new Blob([JSON.stringify(snap, null, 2)], {type:'application/json'}), (currentMapId||'graph')+'-snapshot.json');
+  showToast('JSON snapshot exported');
 }
 
 // ── Path State (derived) ─────────────────────────────────────────────────────
@@ -770,6 +852,9 @@ function readStateFromUrl() {
     q:     p.get('q')     || null,
     theme: p.get('theme') || null,
     path:  p.get('path')  || null,
+    zk:    p.get('zk')    || null,
+    zx:    p.get('zx')    || null,
+    zy:    p.get('zy')    || null,
   };
 }
 
@@ -794,6 +879,15 @@ function writeStateToUrl() {
     // Theme from attribute
     const theme = document.documentElement.getAttribute('data-theme');
     if (theme) sp.set('theme', theme); else sp.delete('theme');
+
+    // Zoom transform
+    const svgEl = document.getElementById('map');
+    if (svgEl) {
+      const t = d3.zoomTransform(svgEl);
+      if (t.k !== 1 || t.x !== 0 || t.y !== 0) {
+        sp.set('zk', t.k.toFixed(2)); sp.set('zx', t.x.toFixed(0)); sp.set('zy', t.y.toFixed(0));
+      } else { sp.delete('zk'); sp.delete('zx'); sp.delete('zy'); }
+    }
 
     history.replaceState(null, '', url);
   }, 200);
@@ -1277,9 +1371,16 @@ function computeLayout(visibleIds) {
 // ── D3 Zoom ──────────────────────────────────────────────────────────────────
 const mapWrap = document.getElementById('mapWrap');
 
+let clusterMode = false;
+const CLUSTER_THRESHOLD = 0.6;
+
 const zoom = d3.zoom().scaleExtent([0.35, 6]).on('zoom', e => {
   const zg = document.getElementById('zoomGroup');
   if (zg) zg.setAttribute('transform', e.transform);
+  const wasCluster = clusterMode;
+  clusterMode = e.transform.k < CLUSTER_THRESHOLD;
+  if (clusterMode !== wasCluster) toggleClusterMode(clusterMode);
+  writeStateToUrl();
 });
 
 d3.select(document.getElementById('map')).call(zoom);
@@ -1303,6 +1404,87 @@ function fitToView(w, h) {
   const tx = (ww - w * scale) / 2;
   const ty = (wh - h * scale) / 2;
   d3.select(svgEl).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+}
+
+// ── Cluster Mode ─────────────────────────────────────────────────────────────
+function toggleClusterMode(on) {
+  const ng = document.getElementById('nodeGroup');
+  const eg = document.getElementById('edgeGroup');
+  let cg = document.getElementById('clusterGroup');
+  if (!on) {
+    if (cg) cg.remove();
+    if (ng) ng.style.opacity = '1';
+    if (eg) eg.style.opacity = '1';
+    return;
+  }
+  // Dim real nodes/edges, show cluster badges
+  if (ng) ng.style.opacity = '0.08';
+  if (eg) eg.style.opacity = '0.08';
+  if (!layoutCache || !layoutCache.positions) return;
+  const pos = layoutCache.positions;
+
+  // Group visible nodes by layer
+  const clusters = {};
+  for (const [id, p] of Object.entries(pos)) {
+    const n = nodeMap[id]; if (!n) continue;
+    const lyr = n.layer || 'default';
+    if (!clusters[lyr]) clusters[lyr] = { ids: [], xs: [], ys: [], color: layers[lyr] || '#818cf8' };
+    clusters[lyr].ids.push(id);
+    clusters[lyr].xs.push(p.x + NW/2);
+    clusters[lyr].ys.push(p.y + NH/2);
+  }
+
+  // Build cluster group SVG
+  const ns = 'http://www.w3.org/2000/svg';
+  cg = document.createElementNS(ns, 'g'); cg.id = 'clusterGroup';
+  for (const [lyr, c] of Object.entries(clusters)) {
+    const cx = c.xs.reduce((a,b)=>a+b,0) / c.xs.length;
+    const cy = c.ys.reduce((a,b)=>a+b,0) / c.ys.length;
+    const r = Math.max(28, Math.sqrt(c.ids.length) * 14);
+    const g = document.createElementNS(ns, 'g');
+    g.setAttribute('class', 'cluster-badge');
+    g.setAttribute('role', 'button'); g.setAttribute('tabindex', '0');
+    g.setAttribute('aria-label', lyr + ' cluster, ' + c.ids.length + ' nodes');
+    g.dataset.layer = lyr;
+
+    const bg = document.createElementNS(ns, 'circle');
+    bg.setAttribute('cx', cx); bg.setAttribute('cy', cy); bg.setAttribute('r', r);
+    bg.setAttribute('fill', c.color); bg.setAttribute('fill-opacity', '0.18');
+    bg.setAttribute('stroke', c.color); bg.setAttribute('stroke-width', '2');
+    bg.setAttribute('class', 'badge-bg');
+    g.appendChild(bg);
+
+    const txt = document.createElementNS(ns, 'text');
+    txt.setAttribute('x', cx); txt.setAttribute('y', cy + 4);
+    txt.setAttribute('text-anchor', 'middle'); txt.setAttribute('fill', c.color);
+    txt.setAttribute('font-family', 'DM Mono, monospace'); txt.setAttribute('font-size', '14');
+    txt.setAttribute('font-weight', '700');
+    txt.textContent = c.ids.length;
+    g.appendChild(txt);
+
+    const lbl = document.createElementNS(ns, 'text');
+    lbl.setAttribute('x', cx); lbl.setAttribute('y', cy + r + 16);
+    lbl.setAttribute('text-anchor', 'middle'); lbl.setAttribute('fill', c.color);
+    lbl.setAttribute('font-family', 'DM Mono, monospace'); lbl.setAttribute('font-size', '10');
+    lbl.setAttribute('fill-opacity', '0.7');
+    lbl.textContent = lyr;
+    g.appendChild(lbl);
+
+    // Click to zoom into this cluster
+    function expandCluster() {
+      const svgEl = document.getElementById('map');
+      const ww = mapWrap.clientWidth || 900, wh = mapWrap.clientHeight || 640;
+      const scale = 0.9;
+      const tx = ww/2 - cx * scale, ty = wh/2 - cy * scale;
+      d3.select(svgEl).transition().duration(350).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+    }
+    g.addEventListener('click', expandCluster);
+    g.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); expandCluster(); } });
+    cg.appendChild(g);
+  }
+  const zg = document.getElementById('zoomGroup');
+  if (zg) zg.appendChild(cg);
+  announce('Clustered view: ' + Object.keys(clusters).length + ' groups. Click a cluster to expand.');
 }
 
 // ── Filtering ────────────────────────────────────────────────────────────────
@@ -1492,6 +1674,13 @@ function handleNodeClick(e) {
   const g = e.target.closest('.node:not(.dimmed)');
   if (!g) return;
   const id = g.dataset.id;
+  // Right-click path mode: if source is set and waiting for target, this click sets target
+  if (state.pathMode && state.selectedId && !state.pathTarget && id !== state.selectedId) {
+    state.pathTarget = id;
+    announce('Path target: ' + (nodeMap[id]?.label || id));
+    render(false);
+    return;
+  }
   if (state.selectedId === id) {
     state.focusNode = state.focusNode === id ? null : id;
     layoutCache = null;
@@ -1842,6 +2031,109 @@ document.getElementById('fitBtn').addEventListener('click', () => {
   if (layoutCache) fitToView(layoutCache.w, layoutCache.h);
 });
 
+// Feature 3: Share URL with zoom state
+document.getElementById('shareBtn').addEventListener('click', () => {
+  // Flush URL state synchronously
+  clearTimeout(urlWriteTimer);
+  const url = new URL(location);
+  const sp = url.searchParams;
+  if (currentMapId) sp.set('map', currentMapId);
+  if (state.selectedId) sp.set('node', state.selectedId); else sp.delete('node');
+  if (state.layer !== 'All') sp.set('layer', state.layer); else sp.delete('layer');
+  if (state.focus !== 'All') sp.set('focus', state.focus); else sp.delete('focus');
+  if (state.heatmap) sp.set('heat', '1'); else sp.delete('heat');
+  if (state.search) sp.set('q', state.search); else sp.delete('q');
+  if (state.pathMode && state.pathTarget) sp.set('path', state.selectedId+','+state.pathTarget); else sp.delete('path');
+  const theme = document.documentElement.getAttribute('data-theme');
+  if (theme) sp.set('theme', theme); else sp.delete('theme');
+  const svgEl = document.getElementById('map');
+  if (svgEl) { const t = d3.zoomTransform(svgEl); if (t.k!==1||t.x!==0||t.y!==0) { sp.set('zk',t.k.toFixed(2));sp.set('zx',t.x.toFixed(0));sp.set('zy',t.y.toFixed(0)); } }
+  history.replaceState(null, '', url);
+  navigator.clipboard.writeText(url.toString()).then(() => showToast('Link copied to clipboard')).catch(() => showToast('Copy the URL from your address bar'));
+});
+
+// Feature 2: Export
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const pop = document.getElementById('exportPopover');
+  pop.hidden = !pop.hidden;
+});
+document.querySelectorAll('.export-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('exportPopover').hidden = true;
+    const fmt = btn.dataset.fmt;
+    if (fmt === 'svg') exportSVG();
+    else if (fmt === 'png') exportPNG();
+    else if (fmt === 'json') exportJSON();
+  });
+});
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#exportBtn') && !e.target.closest('.export-popover')) {
+    document.getElementById('exportPopover').hidden = true;
+  }
+});
+
+// Feature 5: Theme Editor
+document.getElementById('themeEditorBtn').addEventListener('click', () => {
+  const editor = document.getElementById('themeEditor');
+  editor.classList.toggle('is-open');
+  if (editor.classList.contains('is-open')) renderThemeEditor();
+});
+document.getElementById('themeEditorClose').addEventListener('click', () => {
+  document.getElementById('themeEditor').classList.remove('is-open');
+});
+
+function renderThemeEditor() {
+  const panel = document.getElementById('themeEditorPanel');
+  let html = '<div class="d-card"><div class="d-kicker">Presentation Editor</div>';
+
+  // Title
+  html += '<div class="te-section"><div class="te-label">Title</div>';
+  html += '<div class="te-row"><input type="text" id="teTitle" value="' + esc(presentation.title || '') + '"></div></div>';
+
+  // Description
+  html += '<div class="te-section"><div class="te-label">Description</div>';
+  html += '<div class="te-row"><textarea id="teDesc">' + esc(presentation.description || '') + '</textarea></div></div>';
+
+  // Layer colors
+  html += '<div class="te-section"><div class="te-label">Layer Colors</div>';
+  for (const [lyr, color] of Object.entries(layers)) {
+    html += '<div class="te-row"><input type="color" data-layer="' + esc(lyr) + '" class="te-color" value="' + color + '"><span style="font-size:11px">' + esc(lyr) + '</span></div>';
+  }
+  html += '</div>';
+
+  // Export
+  html += '<div class="te-section" style="display:flex;gap:8px">';
+  html += '<button class="te-export-btn" id="teExportPres">Export presentation.json</button>';
+  html += '</div>';
+
+  html += '</div>';
+  panel.innerHTML = html;
+
+  // Wire live preview
+  document.getElementById('teTitle')?.addEventListener('input', function() {
+    presentation.title = this.value;
+    document.getElementById('heroTitle').textContent = this.value || 'Graph Explorer';
+  });
+  document.getElementById('teDesc')?.addEventListener('input', function() {
+    presentation.description = this.value;
+    document.getElementById('heroDesc').textContent = this.value;
+  });
+  panel.querySelectorAll('.te-color').forEach(inp => {
+    inp.addEventListener('input', function() {
+      const lyr = this.dataset.layer;
+      layers[lyr] = this.value;
+      if (presentation.layers) presentation.layers[lyr] = this.value;
+      setupLegend(); setupEdgeLegend();
+      layoutCache = null; render(false);
+    });
+  });
+  document.getElementById('teExportPres')?.addEventListener('click', () => {
+    const out = Object.assign({}, presentation, { layers });
+    downloadBlob(new Blob([JSON.stringify(out, null, 2)], {type:'application/json'}), (currentMapId||'custom')+'-presentation.json');
+    showToast('Presentation exported');
+  });
+}
+
 document.getElementById('resetBtn').addEventListener('click', () => {
   clearTimeout(st);
   pushUndoSnapshot();
@@ -1894,6 +2186,41 @@ document.getElementById('detailClose').addEventListener('click', () => {
 document.getElementById('nodeGroup').addEventListener('keydown', handleNodeKeydown);
 document.getElementById('nodeGroup').onclick = handleNodeClick;
 
+// Feature 1: Right-click path mode
+document.getElementById('nodeGroup').addEventListener('contextmenu', function(e) {
+  const g = e.target.closest('.node:not(.dimmed)');
+  if (!g) return;
+  e.preventDefault();
+  const id = g.dataset.id;
+  pushUndoSnapshot();
+  state.pathMode = true;
+  state.selectedId = id;
+  state.pathTarget = null;
+  pathNodeIds.clear(); pathEdgeKeys.clear(); pathSteps = [];
+  document.getElementById('pathBtn').textContent = '⤳ Path ON';
+  announce('Path source: ' + (nodeMap[id]?.label || id) + '. Click another node to trace path.');
+  render(false);
+});
+
+// Long-press for touch (500ms)
+let longPressTimer = null;
+document.getElementById('nodeGroup').addEventListener('pointerdown', function(e) {
+  if (e.pointerType !== 'touch') return;
+  const g = e.target.closest('.node:not(.dimmed)');
+  if (!g) return;
+  longPressTimer = setTimeout(() => {
+    const id = g.dataset.id;
+    pushUndoSnapshot();
+    state.pathMode = true; state.selectedId = id; state.pathTarget = null;
+    pathNodeIds.clear(); pathEdgeKeys.clear(); pathSteps = [];
+    document.getElementById('pathBtn').textContent = '⤳ Path ON';
+    announce('Path source: ' + (nodeMap[id]?.label || id));
+    render(false);
+  }, 500);
+});
+document.getElementById('nodeGroup').addEventListener('pointerup', () => clearTimeout(longPressTimer));
+document.getElementById('nodeGroup').addEventListener('pointermove', () => clearTimeout(longPressTimer));
+
 // ── Boot ─────────────────────────────────────────────────────────────────────
 (async function boot() {
   const urlState = readStateFromUrl();
@@ -1934,7 +2261,19 @@ document.getElementById('nodeGroup').onclick = handleNodeClick;
   }
 
   layoutCache = null;
-  render();
+  const hasZoomState = urlState.zk;
+  render(!hasZoomState); // skip fitToView if zoom state is in URL
+
+  // Restore zoom transform from URL
+  if (hasZoomState) {
+    const k = parseFloat(urlState.zk), zx = parseFloat(urlState.zx||0), zy = parseFloat(urlState.zy||0);
+    if (isFinite(k) && isFinite(zx) && isFinite(zy)) {
+      requestAnimationFrame(() => {
+        const svgEl = document.getElementById('map');
+        if (svgEl) d3.select(svgEl).call(zoom.transform, d3.zoomIdentity.translate(zx, zy).scale(k));
+      });
+    }
+  }
 
   // First-run coach overlay
   const COACH_KEY = 'ge-onboarded-v1';
