@@ -23,13 +23,13 @@ Graph Explorer is a static graph inspection tool for loading topology datasets, 
 
 | ID | Severity | Status | Title | Notes |
 |----|----------|--------|-------|-------|
-| 001 | P1 | open | Path finding does not validate that source/target nodes exist | Returns empty array without user feedback if nodes removed by filter |
-| 002 | P1 | open | focusNode access crashes if node missing from nodeMap | Unsafe .label access on potentially undefined nodeMap entry |
-| 003 | P1 | open | historySuspend flag not reset on render error | If render() throws, undo snapshots are permanently blocked |
-| 004 | P1 | open | Empty dataset produces NaN layout dimensions | computeLayout with zero nodes yields Infinity bounds |
-| 005 | P2 | open | aria-live announce region exists but is never populated | State changes like filter results are not announced to screen readers |
-| 006 | P2 | open | Path mode does not invalidate when filter removes target node | Old path visualization persists after node is filtered out |
-| 007 | P2 | open | Detail panel overflow not constrained on mobile | At 1100px breakpoint detail panel loses max-height and fills viewport |
+| 001 | P1 | fixed | Path finding does not validate that source/target nodes exist | Added nodeMap guard in findShortestPath |
+| 002 | P1 | fixed | focusNode access crashes if node missing from nodeMap | Added null-check before .label access |
+| 003 | P1 | fixed | historySuspend flag not reset on render error | Wrapped restoreStateSnapshot in try/finally |
+| 004 | P1 | fixed | Empty dataset produces NaN layout dimensions | Added Number.isFinite guards on bounds |
+| 005 | P2 | fixed | aria-live announce region exists but is never populated | Added announce() calls on selection and filter changes |
+| 006 | P2 | fixed | Path mode does not invalidate when filter removes target node | render() now clears path when source/target filtered out |
+| 007 | P2 | fixed | Detail panel overflow not constrained on mobile | Set max-height:50vh at 1100px breakpoint |
 
 ## Session Log
 
