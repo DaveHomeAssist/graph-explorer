@@ -150,7 +150,7 @@
     .icon-btn:disabled { opacity: 0.45; cursor: not-allowed; }
     .icon-btn:disabled:hover { color: var(--muted); }
 
-    .main { display: grid; grid-template-columns: 1fr 290px; gap: 14px; align-items: start; }
+    .main { display: grid; grid-template-columns: 1fr; gap: 14px; align-items: start; position: relative; }
 
     .canvas { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 
@@ -164,6 +164,8 @@
 
     .legend { display: flex; flex-wrap: wrap; gap: 6px; }
     .legend-item { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: 10.5px; font-family: 'DM Mono', monospace; }
+    .legend-item.is-clickable { cursor: pointer; padding: 2px 6px; border-radius: 4px; border: 1px solid transparent; }
+    .legend-item.is-clickable:hover { border-color: var(--border); background: rgba(255,255,255,0.04); }
     .dot { width: 7px; height: 7px; border-radius: 999px; }
     .legend-glyph {
       display: inline-flex; align-items: center; justify-content: center;
@@ -217,8 +219,13 @@
 
     .detail {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 12px; position: sticky; top: 18px; max-height: calc(100vh - 36px); overflow-y: auto;
+      padding: 12px; position: absolute; top: 0; right: 0; width: 290px;
+      max-height: calc(100vh - 36px); overflow-y: auto; z-index: 15;
+      transform: translateX(calc(100% + 14px)); transition: transform 0.2s ease;
     }
+    .detail.is-open { transform: translateX(0); }
+    .detail-close { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; border: none; background: var(--panel-2); color: var(--muted); border-radius: 4px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; z-index: 1; }
+    .detail-close:hover { background: var(--panel); color: var(--text); }
     .detail::-webkit-scrollbar { width: 3px; }
     .detail::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 999px; }
 
@@ -340,7 +347,7 @@
 
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 
-    @media (max-width: 1100px) { .main { grid-template-columns: 1fr; } .detail { position: static; max-height: 50vh; overflow-y: auto; } }
+    @media (max-width: 1100px) { .main { grid-template-columns: 1fr; } .detail { position: fixed; top: auto; bottom: 0; left: 0; right: 0; width: 100%; max-height: 50vh; border-radius: var(--radius) var(--radius) 0 0; transform: translateY(100%); } .detail.is-open { transform: translateY(0); } }
     @media (max-width: 700px) { .hero { grid-template-columns: 1fr; } .hero-stats { grid-template-columns: repeat(2,1fr); } }
 
     @media (prefers-color-scheme: light) {
@@ -486,7 +493,7 @@
     <span class="path-label">Path</span>
     <span class="path-chip source" id="pathSource">—</span>
     <span class="path-arrow">→</span>
-    <select class="path-target-select" id="pathTargetSelect"><option value="">Select target…</option></select>
+    <select class="path-target-select" id="pathTargetSelect" aria-label="Select path target node"><option value="">Select target…</option></select>
     <select class="path-history-select" id="pathHistorySelect"><option value="">Recent paths…</option></select>
     <span class="path-result" id="pathResult"></span>
     <button class="path-clear" id="pathClear">✕ Clear</button>
@@ -528,7 +535,8 @@
       </div>
     </section>
 
-    <aside class="detail">
+    <aside class="detail" id="detailDrawer">
+      <button class="detail-close" id="detailClose" title="Close panel">✕</button>
       <div class="d-stack" id="detailPanel"></div>
     </aside>
   </div>
@@ -1126,9 +1134,21 @@ function setupLegend() {
   const items = Array.isArray(presentation.legendItems) && presentation.legendItems.length
     ? presentation.legendItems
     : Object.entries(layers).map(([label, color]) => ({ label, color }));
-  document.getElementById('legend').innerHTML = items.map((item) =>
-    `<span class="legend-item">${item.glyph ? `<span class="legend-glyph">${esc(item.glyph)}</span>` : `<span class="dot" style="background:${item.color}"></span>`}${esc(item.label)}</span>`
+  const el = document.getElementById('legend');
+  el.innerHTML = items.map((item) =>
+    `<span class="legend-item is-clickable" data-layer="${esc(item.label)}" role="button" tabindex="0" title="Click to filter by ${esc(item.label)}">${item.glyph ? `<span class="legend-glyph">${esc(item.glyph)}</span>` : `<span class="dot" style="background:${item.color}"></span>`}${esc(item.label)}</span>`
   ).join('');
+  el.querySelectorAll('.legend-item.is-clickable').forEach(li => {
+    function toggle() {
+      const lyr = li.dataset.layer;
+      pushUndoSnapshot();
+      if (state.layer === lyr) { state.layer = 'All'; } else { state.layer = lyr; }
+      document.getElementById('layerF').value = state.layer;
+      state.focusNode = null; layoutCache = null; render();
+    }
+    li.addEventListener('click', toggle);
+    li.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+  });
 }
 
 function setupEdgeLegend() {
@@ -1497,6 +1517,12 @@ function handleNodeKeydown(e) {
 // ── Render: Detail Panel (Dataset-Agnostic) ──────────────────────────────────
 function renderDetail(visIds) {
   const panel = document.getElementById('detailPanel');
+  const drawer = document.getElementById('detailDrawer');
+  if (state.selectedId && visIds.has(state.selectedId)) {
+    drawer.classList.add('is-open');
+  } else {
+    drawer.classList.remove('is-open');
+  }
   if (!visIds.size) {
     let filters = '';
     if (state.search) filters += `<button class="clear-filter-btn" data-clear="search">search: "${esc(state.search)}" ✕</button> `;
@@ -1765,6 +1791,7 @@ document.getElementById('heatBtn').addEventListener('click', () => {
   const hb = document.getElementById('heatBtn');
   hb.textContent = '🌡';
   hb.title = state.heatmap ? 'Heatmap ON — click to disable' : 'Toggle heatmap';
+  hb.setAttribute('aria-pressed', state.heatmap);
   hb.style.background = state.heatmap ? 'rgba(129,140,248,0.15)' : '';
   render(false);
 });
@@ -1839,6 +1866,10 @@ document.getElementById('undoBtn').addEventListener('click', performUndo);
 document.getElementById('redoBtn').addEventListener('click', performRedo);
 
 document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    const drawer = document.getElementById('detailDrawer');
+    if (drawer.classList.contains('is-open')) { drawer.classList.remove('is-open'); return; }
+  }
   const meta = event.metaKey || event.ctrlKey;
   if (!meta) return;
   const tag = event.target?.tagName?.toLowerCase();
@@ -1852,6 +1883,11 @@ document.addEventListener('keydown', (event) => {
     event.preventDefault();
     performRedo();
   }
+});
+
+// Detail drawer close button
+document.getElementById('detailClose').addEventListener('click', () => {
+  document.getElementById('detailDrawer').classList.remove('is-open');
 });
 
 // Bind initial node group handlers
@@ -1899,7 +1935,47 @@ document.getElementById('nodeGroup').onclick = handleNodeClick;
 
   layoutCache = null;
   render();
+
+  // First-run coach overlay
+  const COACH_KEY = 'ge-onboarded-v1';
+  if (!localStorage.getItem(COACH_KEY)) {
+    showCoach();
+  }
 })();
+
+function showCoach() {
+  const steps = [
+    { text: 'Click any node to inspect its details', icon: '👆' },
+    { text: 'Double-click a selected node to focus on its neighbors', icon: '⊙' },
+    { text: 'Use Search or click a legend color to filter', icon: '🔍' },
+  ];
+  let step = 0;
+  const overlay = document.createElement('div');
+  overlay.id = 'coachOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;';
+  function renderStep() {
+    const s = steps[step];
+    const isLast = step === steps.length - 1;
+    overlay.innerHTML = `<div style="background:var(--surface,#0d1420);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:28px 32px;max-width:380px;text-align:center;color:#e4ecf8;font-family:'DM Sans',sans-serif">
+      <div style="font-size:32px;margin-bottom:12px">${s.icon}</div>
+      <div style="font-size:15px;line-height:1.5;margin-bottom:16px">${s.text}</div>
+      <div style="display:flex;gap:8px;justify-content:center;align-items:center">
+        <span style="font-family:'DM Mono',monospace;font-size:11px;color:#6b85ae">${step+1} / ${steps.length}</span>
+        <button id="coachNext" style="padding:6px 18px;border:none;border-radius:8px;background:#818cf8;color:#fff;font-size:13px;font-weight:600;cursor:pointer">${isLast ? 'Got it' : 'Next'}</button>
+      </div>
+    </div>`;
+    document.getElementById('coachNext').onclick = () => {
+      step++;
+      if (step >= steps.length) {
+        overlay.remove();
+        try { localStorage.setItem('ge-onboarded-v1', '1'); } catch {}
+      } else { renderStep(); }
+    };
+  }
+  renderStep();
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) { overlay.remove(); try { localStorage.setItem('ge-onboarded-v1', '1'); } catch {} } });
+  document.body.appendChild(overlay);
+}
 </script>
 </body>
 </html>
