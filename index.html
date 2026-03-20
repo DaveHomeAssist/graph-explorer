@@ -531,6 +531,14 @@ const state = {
   pathTarget: null,
 };
 
+// ── Accessibility: Live Region Announcer ─────────────────────────────────────
+function announce(msg) {
+  const el = document.getElementById('announce');
+  if (!el) return;
+  el.textContent = '';
+  requestAnimationFrame(() => { el.textContent = msg; });
+}
+
 // ── Path State (derived) ─────────────────────────────────────────────────────
 let pathNodeIds = new Set();
 let pathEdgeKeys = new Set();  // "from→to" keys
@@ -819,9 +827,12 @@ function updatePathBar() {
   if (!state.pathTarget) {
     resultEl.textContent = '';
   } else if (pathSteps.length > 0) {
-    resultEl.textContent = `${pathSteps.length - 1} hop${pathSteps.length - 1 !== 1 ? 's' : ''} · ${pathSteps.length} nodes`;
+    const summary = `${pathSteps.length - 1} hop${pathSteps.length - 1 !== 1 ? 's' : ''} · ${pathSteps.length} nodes`;
+    resultEl.textContent = summary;
+    announce(`Path found: ${summary}`);
   } else {
     resultEl.textContent = 'No path found';
+    announce('No path found between selected nodes');
   }
   updatePathHistorySelect();
 }
@@ -1001,6 +1012,7 @@ async function loadMapPack(mapOrId) {
     document.getElementById('heroTitle').textContent = pres.title || 'Graph Explorer';
     document.getElementById('heroDesc').textContent = pres.description || '';
     document.title = (pres.title || 'Graph Explorer') + ' — Graph Explorer';
+    announce(`Map loaded: ${pres.title || 'Graph Explorer'}`);
 
     // Restore SVG structure (in case status cards replaced it)
     restoreCanvas();
@@ -1314,6 +1326,7 @@ function renderMap(visIds) {
 
   if (!visIds.size) {
     document.getElementById('canvasTitle').textContent = 'No matching nodes';
+    announce('No matching nodes for current filter');
     return;
   }
 
@@ -1393,9 +1406,10 @@ function renderMap(visIds) {
     nodeGrp.appendChild(g);
   });
 
-  document.getElementById('canvasTitle').textContent =
-    state.focusNode ? `Focus: ${nodeMap[state.focusNode].label}` :
+  const canvasLabel = state.focusNode ? `Focus: ${nodeMap[state.focusNode].label}` :
     state.focus !== 'All' ? state.focus : (presentation.title || 'Full Topology');
+  document.getElementById('canvasTitle').textContent = canvasLabel;
+  announce(`Showing ${visIds.size} node${visIds.size !== 1 ? 's' : ''} — ${canvasLabel}`);
 }
 
 // ── Node event handlers (shared between initial and restored SVG) ────────────
