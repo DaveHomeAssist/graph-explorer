@@ -466,6 +466,62 @@
     html[data-theme='light'] .warning-note { background: rgba(217,119,6,0.08); border-color: rgba(217,119,6,0.18); }
     html[data-theme='light'] .map-empty { background: rgba(240,242,247,0.68); }
 
+    /* ── Theme: Instrument Grade (violet/indigo on deep black) ── */
+    html[data-theme='instrument'] {
+      --bg: #0A0A10; --surface: #10101a; --panel: #151520; --panel-2: #1a1a2a;
+      --border: rgba(155,89,245,0.1); --muted: #6b6b8a; --text: #B8D8FF;
+    }
+    html[data-theme='instrument'] .map-wrap {
+      background: radial-gradient(ellipse at 30% 40%,#3D0EA822 0%,transparent 60%), radial-gradient(ellipse at 70% 70%,#9B59F508 0%,transparent 40%), #0A0A10;
+    }
+    html[data-theme='instrument'] .eyebrow { background: rgba(155,89,245,0.12); color: #9B59F5; border-color: rgba(155,89,245,0.25); }
+    html[data-theme='instrument'] .d-kicker { color: #9B59F5; }
+    html[data-theme='instrument'] .node .bg { fill: rgba(16,16,26,0.95); stroke: rgba(155,89,245,0.15); }
+    html[data-theme='instrument'] .node:hover .bg { stroke: rgba(155,89,245,0.35); }
+    html[data-theme='instrument'] .node .n-name { fill: #B8D8FF; }
+    html[data-theme='instrument'] .node .n-meta { fill: #6b6b8a; }
+    html[data-theme='instrument'] .seg button.active { background: rgba(155,89,245,0.15); }
+
+    /* ── Theme: Deep Sea (navy/cyan/teal) ── */
+    html[data-theme='deepsea'] {
+      --bg: #020B18; --surface: #061222; --panel: #0a1a30; --panel-2: #0e2240;
+      --border: rgba(77,200,232,0.1); --muted: #1E6A80; --text: #4DC8E8;
+    }
+    html[data-theme='deepsea'] .map-wrap {
+      background: radial-gradient(ellipse at 30% 40%,#003A6622 0%,transparent 50%), radial-gradient(ellipse at 70% 60%,#0080AA0A 0%,transparent 40%), #020B18;
+    }
+    html[data-theme='deepsea'] .eyebrow { background: rgba(77,200,232,0.1); color: #4DC8E8; border-color: rgba(77,200,232,0.2); }
+    html[data-theme='deepsea'] .d-kicker { color: #4DC8E8; }
+    html[data-theme='deepsea'] .node .bg { fill: rgba(6,18,34,0.95); stroke: rgba(77,200,232,0.12); }
+    html[data-theme='deepsea'] .node:hover .bg { stroke: rgba(77,200,232,0.3); }
+    html[data-theme='deepsea'] .node .n-name { fill: #4DC8E8; }
+    html[data-theme='deepsea'] .node .n-meta { fill: #1E6A80; }
+    html[data-theme='deepsea'] .seg button.active { background: rgba(77,200,232,0.12); }
+
+    /* ── Theme: Terminal (green-on-black) ── */
+    html[data-theme='terminal'] {
+      --bg: #0D0D0D; --surface: #111111; --panel: #161616; --panel-2: #1c1c1c;
+      --border: rgba(0,255,65,0.08); --muted: rgba(0,255,65,0.4); --text: #00FF41;
+    }
+    html[data-theme='terminal'] .map-wrap {
+      background: repeating-linear-gradient(0deg,transparent,transparent 3px,#00FF4106 3px,#00FF4106 4px), #0D0D0D;
+    }
+    html[data-theme='terminal'] .eyebrow { background: rgba(0,255,65,0.08); color: #00FF41; border-color: rgba(0,255,65,0.2); }
+    html[data-theme='terminal'] .d-kicker { color: #00FF41; }
+    html[data-theme='terminal'] .node .bg { fill: rgba(17,17,17,0.95); stroke: rgba(0,255,65,0.15); }
+    html[data-theme='terminal'] .node:hover .bg { stroke: rgba(0,255,65,0.4); }
+    html[data-theme='terminal'] .node .n-name { fill: #00FF41; }
+    html[data-theme='terminal'] .node .n-meta { fill: rgba(0,255,65,0.5); }
+    html[data-theme='terminal'] .seg button.active { background: rgba(0,255,65,0.1); }
+    html[data-theme='terminal'] * { font-family: 'DM Mono', 'Space Mono', monospace !important; }
+
+    /* ── Theme Manager Popover ── */
+    .theme-popover { position:absolute;bottom:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px;display:flex;flex-direction:column;gap:3px;min-width:160px;z-index:30; }
+    .theme-opt { display:flex;align-items:center;gap:8px;border:none;background:transparent;color:var(--text);padding:6px 10px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;border-radius:5px;text-align:left;width:100%; }
+    .theme-opt:hover { background:var(--panel-2); }
+    .theme-opt.active { background:rgba(129,140,248,0.12);color:#a5b4fc; }
+    .theme-swatch { width:14px;height:14px;border-radius:3px;border:1px solid rgba(255,255,255,0.12);flex-shrink:0; }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         transition-duration: 0.01ms !important;
@@ -534,7 +590,16 @@
         <div class="canvas-float-toolbar">
           <button class="float-btn" id="fitBtn" title="Fit to view">⊡</button>
           <button class="float-btn" id="heatBtn" title="Toggle heatmap">🌡</button>
-          <button class="float-btn" id="themeBtn" title="Toggle theme">☀</button>
+          <div style="position:relative">
+            <button class="float-btn" id="themeBtn" title="Switch theme">☀</button>
+            <div class="theme-popover" id="themePopover" hidden>
+              <button class="theme-opt" data-theme-val="dark"><span class="theme-swatch" style="background:#070b12"></span>Default Dark</button>
+              <button class="theme-opt" data-theme-val="light"><span class="theme-swatch" style="background:#f0f2f7"></span>Light</button>
+              <button class="theme-opt" data-theme-val="instrument"><span class="theme-swatch" style="background:#0A0A10;border-color:#9B59F5"></span>Instrument Grade</button>
+              <button class="theme-opt" data-theme-val="deepsea"><span class="theme-swatch" style="background:#020B18;border-color:#4DC8E8"></span>Deep Sea</button>
+              <button class="theme-opt" data-theme-val="terminal"><span class="theme-swatch" style="background:#0D0D0D;border-color:#00FF41"></span>Terminal</button>
+            </div>
+          </div>
           <button class="float-btn" id="shareBtn" title="Copy share link">🔗</button>
           <button class="float-btn" id="themeEditorBtn" title="Theme editor">🎨</button>
           <div style="position:relative">
@@ -1310,10 +1375,11 @@ function getInitialTheme() {
   return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 }
 
+const THEME_ICONS = { dark:'🌙', light:'☀', instrument:'💎', deepsea:'🌊', terminal:'▶' };
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   const btn = document.getElementById('themeBtn');
-  if (btn) btn.textContent = theme === 'light' ? '☀ Light' : '🌙 Dark';
+  if (btn) btn.textContent = THEME_ICONS[theme] || '🎨';
 }
 
 // ── Layout ───────────────────────────────────────────────────────────────────
@@ -1985,12 +2051,30 @@ document.getElementById('heatBtn').addEventListener('click', () => {
   render(false);
 });
 
-document.getElementById('themeBtn').addEventListener('click', () => {
-  const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
-  const next = current === 'light' ? 'dark' : 'light';
-  applyTheme(next);
-  try { localStorage.setItem(THEME_KEY, next); } catch {}
-  writeStateToUrl();
+// Theme manager popover
+document.getElementById('themeBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const pop = document.getElementById('themePopover');
+  pop.hidden = !pop.hidden;
+  if (!pop.hidden) {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    pop.querySelectorAll('.theme-opt').forEach(b => b.classList.toggle('active', b.dataset.themeVal === current));
+  }
+});
+document.querySelectorAll('.theme-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const t = btn.dataset.themeVal;
+    applyTheme(t);
+    try { localStorage.setItem(THEME_KEY, t); } catch {}
+    writeStateToUrl();
+    document.getElementById('themePopover').hidden = true;
+    showToast('Theme: ' + btn.textContent.trim());
+  });
+});
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#themeBtn') && !e.target.closest('.theme-popover')) {
+    document.getElementById('themePopover').hidden = true;
+  }
 });
 
 document.getElementById('pathBtn').addEventListener('click', () => {
