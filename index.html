@@ -225,15 +225,17 @@
       padding: 12px; position: absolute; top: 0; right: 0; width: 290px;
       max-height: calc(100vh - 36px); overflow-y: auto; z-index: 15;
       transform: translateX(calc(100% + 14px)); transition: transform 0.2s ease;
+      visibility: hidden;
     }
-    .detail.is-open { transform: translateX(0); }
+    .detail.is-open { transform: translateX(0); visibility: visible; }
     .theme-editor {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
       padding: 12px; position: absolute; top: 0; left: 0; width: 300px;
       max-height: calc(100vh - 36px); overflow-y: auto; z-index: 15;
       transform: translateX(calc(-100% - 14px)); transition: transform 0.2s ease;
+      visibility: hidden;
     }
-    .theme-editor.is-open { transform: translateX(0); }
+    .theme-editor.is-open { transform: translateX(0); visibility: visible; }
     .te-section { margin-bottom: 12px; }
     .te-label { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
     .te-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
