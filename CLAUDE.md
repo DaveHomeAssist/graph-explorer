@@ -47,3 +47,24 @@
 - Do not add a map pack without registering it in `maps/manifest.json`
 - Do not remove the fallback presentation pattern — PromptLab exports depend on `default-presentation.json`
 - Do not break aria-live announcements — screen reader support is a tracked priority (P2)
+
+## Documentation Maintenance
+
+- **Issues**: Track in CLAUDE.md issue tracker table below. When project gets a `docs/UI_ISSUES_TABLE.html`, migrate there.
+- **Session log**: Append to `/Users/daverobertson/Desktop/Code/95-docs-personal/today.csv` after each meaningful change
+
+## Issue Tracker
+
+| ID | Severity | Status | Title | Notes |
+|----|----------|--------|-------|-------|
+| 001 | P1 | fixed | Path finding does not validate that source/target nodes exist | Added nodeMap guard in findShortestPath |
+| 002 | P1 | fixed | focusNode access crashes if node missing from nodeMap | Added null-check before .label access |
+| 003 | P1 | fixed | historySuspend flag not reset on render error | Wrapped restoreStateSnapshot in try/finally |
+| 004 | P1 | fixed | Empty dataset produces NaN layout dimensions | Added Number.isFinite guards on bounds |
+| 005 | P2 | fixed | aria-live announce region exists but is never populated | Added announce() calls on selection and filter changes |
+| 006 | P2 | fixed | Path mode does not invalidate when filter removes target node | render() now clears path when source/target filtered out |
+| 007 | P2 | fixed | Detail panel overflow not constrained on mobile | Set max-height:50vh at 1100px breakpoint |
+
+## Session Log
+
+[2026-03-18] [GraphExplorer] [docs] Add AGENTS baseline
