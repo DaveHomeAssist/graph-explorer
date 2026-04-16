@@ -2,6 +2,25 @@
 
 > Static graph inspection and topology visualization tool. One viewer, many map packs.
 
+## Project Overview
+
+Static, zero-dependency graph topology visualization and inspection tool. Renders pluggable "map packs" using D3.js and Dagre. One viewer engine, many interchangeable datasets.
+
+## Stack
+
+- Single-file HTML application (`index.html`)
+- D3.js and Dagre via pinned CDN (no npm, no build step)
+- No localStorage or persistence between sessions
+- GitHub Pages deployment from `main`
+
+## Key Decisions
+
+- Dataset and presentation are decoupled JSON files. Visual styling does not live in topology data.
+- All map packs validated against `engine/validate.js`. Errors block load, warnings allow.
+- Map pack registry is `maps/manifest.json`. Fallback presentation is `maps/default-presentation.json`.
+- PromptLab exports depend on `default-presentation.json`. Do not remove the fallback pattern.
+- Accessibility: aria-live announcements on selection and filter changes.
+
 ## Architecture
 
 - Zero backend — no server, no database, no API calls
