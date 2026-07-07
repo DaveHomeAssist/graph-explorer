@@ -660,6 +660,7 @@
 
 <script type="module">
 import { validateDataset } from './engine/validate.js';
+import { MAP_STATE_KEY, safeReadJson, safeWriteJson, esc, populateSelect, getMapLabel, getDatasetPath, readMapBookmarks } from './engine/core.js';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const SUPPORTED_SCHEMA_VERSIONS = [1];
@@ -668,7 +669,6 @@ const DEFAULT_PRESENTATION_PATH = 'maps/default-presentation.json';
 const NW = 220;
 const NH = 88;
 const THEME_KEY = 'graph-explorer-theme';
-const MAP_STATE_KEY = 'ge-map-states-v1';
 const PATH_HISTORY_KEY = 'ge-path-history-v1';
 const UNDO_LIMIT = 10;
 
@@ -764,23 +764,6 @@ let pathNodeIds = new Set();
 let pathEdgeKeys = new Set();  // "from→to" keys
 let pathSteps = [];            // ordered node IDs in the path
 
-function safeReadJson(key, fallback) {
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return fallback;
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' ? parsed : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function safeWriteJson(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {}
-}
-
 function snapshotState() {
   return {
     search: state.search,
@@ -849,10 +832,6 @@ function performRedo() {
   const entry = redoStack.pop();
   undoStack.push({ mapId: currentMapId, state: snapshotState() });
   restoreStateSnapshot(entry);
-}
-
-function readMapBookmarks() {
-  return safeReadJson(MAP_STATE_KEY, {});
 }
 
 function writeMapBookmark() {
@@ -1135,14 +1114,6 @@ async function loadManifest() {
 function getMapEntry(mapOrId) {
   if (typeof mapOrId === 'object' && mapOrId) return mapOrId;
   return manifest?.maps?.find((entry) => entry.id === mapOrId) || null;
-}
-
-function getMapLabel(entry) {
-  return entry?.title || entry?.name || entry?.id || 'map';
-}
-
-function getDatasetPath(entry) {
-  return entry?.file || `maps/${entry.id}/dataset.json`;
 }
 
 function getPresentationPath(entry) {
@@ -2016,17 +1987,6 @@ function render(refit = true) {
 }
 
 // ── Utilities ────────────────────────────────────────────────────────────────
-function esc(str) {
-  const el = document.createElement('span');
-  el.textContent = String(str ?? '');
-  return el.innerHTML;
-}
-
-function populateSelect(id, values) {
-  const el = document.getElementById(id);
-  el.innerHTML = ['All', ...new Set(values)].map(v => `<option value="${v}">${v}</option>`).join('');
-}
-
 // ── Map Selector (manifest-driven) ───────────────────────────────────────────
 function setupMapSelector(maps, initialId) {
   const sel = document.getElementById('mapSelect');
