@@ -74,7 +74,7 @@
       "meta": {
         "desc": "Premium service site for Act Two Catering — marketing and lead generation",
         "tags": ["static", "service-worker"],
-        "url": "https://github.com/DaveHomeAssist/catering",
+        "url": "https://github.com/DaveHomeAssist/act-two-catering",
         "risks": ["Quote form is a dead end"],
         "nextMoves": ["Wire real form backend"]
       }
@@ -116,7 +116,7 @@
       "meta": {
         "desc": "Event security quote intake portal — v4 gold master",
         "tags": ["static", "single-file", "multi-theme", "v4-gold"],
-        "url": "https://github.com/DaveHomeAssist/shieldbox-security-event-quote-request-v4-gold-master.html",
+        "url": "https://github.com/DaveHomeAssist/shieldbox-event-quote",
         "risks": ["No checkbox names", "No quote calc", "No validation", "No attendance bounds"],
         "nextMoves": ["Add form serialization", "Build quote calculator", "Fix validation flow"]
       }
