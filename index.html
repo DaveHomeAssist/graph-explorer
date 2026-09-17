@@ -89,8 +89,16 @@
 
     .hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 
+    /* The detail drawer is 290px wide and anchored right, and the toolbar
+       outranks it on z-index, so an open drawer used to be printed over. */
+    .main.is-drawer-open .canvas-float-toolbar { right: 318px; }
+    @media (max-width: 1100px) {
+      /* The drawer becomes a bottom sheet here, so clear it upward instead. */
+      .main.is-drawer-open .canvas-float-toolbar { right: 14px; bottom: calc(50vh + 14px); }
+    }
     .canvas-float-toolbar {
       position: absolute; bottom: 14px; right: 14px; z-index: 20;
+      transition: right 0.2s ease, bottom 0.2s ease;
       display: flex; flex-direction: column; gap: 4px;
       background: var(--surface); border: 1px solid var(--border);
       border-radius: var(--radius-sm); padding: 5px;
@@ -650,10 +658,10 @@
         </div>
       </div>
       <div class="canvas-float-toolbar">
-        <button class="float-btn" id="fitBtn" title="Fit to view">⊡</button>
-        <button class="float-btn" id="heatBtn" title="Toggle heatmap">🌡</button>
+        <button class="float-btn" id="fitBtn" aria-label="Fit graph to view" title="Fit to view">⊡</button>
+        <button class="float-btn" id="heatBtn" aria-label="Toggle heatmap" title="Toggle heatmap" aria-pressed="false">🌡</button>
         <div style="position:relative">
-          <button class="float-btn" id="themeBtn" title="Switch theme">☀</button>
+          <button class="float-btn" id="themeBtn" aria-label="Switch theme" title="Switch theme">☀</button>
           <div class="theme-popover" id="themePopover" hidden>
             <button class="theme-opt" data-theme-val="dark"><span class="theme-swatch" style="background:#070b12"></span>Default Dark</button>
             <button class="theme-opt" data-theme-val="light"><span class="theme-swatch" style="background:#f0f2f7"></span>Light</button>
@@ -662,10 +670,10 @@
             <button class="theme-opt" data-theme-val="terminal"><span class="theme-swatch" style="background:#0D0D0D;border-color:#00FF41"></span>Terminal</button>
           </div>
         </div>
-        <button class="float-btn" id="shareBtn" title="Copy share link">🔗</button>
-        <button class="float-btn" id="themeEditorBtn" title="Theme editor">🎨</button>
+        <button class="float-btn" id="shareBtn" aria-label="Copy share link" title="Copy share link">🔗</button>
+        <button class="float-btn" id="themeEditorBtn" aria-label="Open theme editor" title="Theme editor">🎨</button>
         <div style="position:relative">
-          <button class="float-btn" id="exportBtn" title="Export">📥</button>
+          <button class="float-btn" id="exportBtn" aria-label="Export graph" title="Export">📥</button>
           <div class="export-popover" id="exportPopover" hidden>
             <button class="export-opt" data-fmt="svg">SVG</button>
             <button class="export-opt" data-fmt="png">PNG</button>
@@ -827,6 +835,19 @@ function snapshotState() {
   };
 }
 
+// #heatBtn is a 36x36 icon button. Writing "🌡 Heatmap ON" into it made the
+// label overflow the floating toolbar and print across the detail drawer.
+// State belongs on aria-pressed and title, never in the glyph.
+function syncHeatButton() {
+  const hb = document.getElementById('heatBtn');
+  if (!hb) return;
+  hb.textContent = '🌡';
+  hb.title = state.heatmap ? 'Heatmap ON — click to disable' : 'Toggle heatmap';
+  hb.setAttribute('aria-label', hb.title);
+  hb.setAttribute('aria-pressed', String(state.heatmap));
+  hb.style.background = state.heatmap ? 'rgba(129,140,248,0.15)' : '';
+}
+
 function syncControlsFromState() {
   const searchEl = document.getElementById('search');
   const layerEl = document.getElementById('layerF');
@@ -834,7 +855,7 @@ function syncControlsFromState() {
   const pathBtn = document.getElementById('pathBtn');
   if (searchEl) searchEl.value = state.search || '';
   if (layerEl) layerEl.value = state.layer || 'All';
-  if (heatBtn) heatBtn.textContent = state.heatmap ? '🌡 Heatmap ON' : '🌡 Heatmap';
+  syncHeatButton();
   if (pathBtn) pathBtn.textContent = state.pathMode ? '⤳ Path ON' : '⤳ Path';
 }
 
@@ -1838,12 +1859,17 @@ function handleNodeClick(e) {
     render(false);
     return;
   }
+  // Toggling focus rebuilds the whole layout, so the camera has to follow it.
+  // Every other filter that invalidates layoutCache refits; this one did not,
+  // which left the focused subgraph stranded wherever the old transform put it.
+  let relayout = false;
   if (state.selectedId === id) {
     state.focusNode = state.focusNode === id ? null : id;
     layoutCache = null;
+    relayout = true;
   }
   state.selectedId = id;
-  render(false);
+  render(relayout);
 }
 
 const ARROW_KEYS = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'];
@@ -1872,12 +1898,17 @@ function handleNodeKeydown(e) {
   if (!g) return;
   e.preventDefault();
   const id = g.dataset.id;
+  // Toggling focus rebuilds the whole layout, so the camera has to follow it.
+  // Every other filter that invalidates layoutCache refits; this one did not,
+  // which left the focused subgraph stranded wherever the old transform put it.
+  let relayout = false;
   if (state.selectedId === id) {
     state.focusNode = state.focusNode === id ? null : id;
     layoutCache = null;
+    relayout = true;
   }
   state.selectedId = id;
-  render(false);
+  render(relayout);
 }
 
 // Closing the drawer used to drop focus on <body>, stranding keyboard users at
@@ -1886,6 +1917,7 @@ function closeDetailDrawer() {
   const drawer = document.getElementById('detailDrawer');
   if (!drawer) return;
   drawer.classList.remove('is-open');
+  document.querySelector('.main')?.classList.remove('is-drawer-open');
   drawer.setAttribute('aria-hidden', 'true');
   const origin = state.selectedId
     && document.querySelector(`#nodeGroup > g[data-id="${CSS.escape(state.selectedId)}"]`);
@@ -1901,6 +1933,7 @@ function renderDetail(visIds) {
   // real selection.
   const open = userHasSelected && state.selectedId && visIds.has(state.selectedId);
   drawer.classList.toggle('is-open', !!open);
+  document.querySelector('.main')?.classList.toggle('is-drawer-open', !!open);
   // A drawer that is off-screen must also be out of the accessibility tree,
   // otherwise its controls stay reachable as phantom tab stops.
   drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
@@ -2158,11 +2191,7 @@ document.getElementById('layerF').addEventListener('change', e => {
 
 document.getElementById('heatBtn').addEventListener('click', () => {
   state.heatmap = !state.heatmap;
-  const hb = document.getElementById('heatBtn');
-  hb.textContent = '🌡';
-  hb.title = state.heatmap ? 'Heatmap ON — click to disable' : 'Toggle heatmap';
-  hb.setAttribute('aria-pressed', state.heatmap);
-  hb.style.background = state.heatmap ? 'rgba(129,140,248,0.15)' : '';
+  syncHeatButton();
   render(false);
 });
 
@@ -2466,7 +2495,7 @@ document.getElementById('nodeGroup').addEventListener('pointermove', () => clear
   if (urlState.node && nodeMap[urlState.node]) { state.selectedId = urlState.node; userHasSelected = true; }
   if (urlState.layer) { state.layer = urlState.layer; document.getElementById('layerF').value = urlState.layer; }
   if (urlState.focus) state.focus = urlState.focus;
-  if (urlState.heat === '1') { state.heatmap = true; document.getElementById('heatBtn').textContent = '🌡 Heatmap ON'; }
+  if (urlState.heat === '1') { state.heatmap = true; syncHeatButton(); }
   if (urlState.q) { state.search = urlState.q; document.getElementById('search').value = urlState.q; }
   if (isKnownTheme(urlState.theme)) applyTheme(urlState.theme);
   if (urlState.path) {
