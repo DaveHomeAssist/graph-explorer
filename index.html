@@ -56,7 +56,11 @@
       outline: 2px solid currentColor;
     }
 
-    .page { max-width: 1640px; margin: 0 auto; display: grid; gap: 14px; }
+    .page { max-width: 1640px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    /* Grid items are min-width:auto by default, which let the widest descendant
+       push every top-level block past the viewport at phone width. */
+    .page > * { min-width: 0; }
+    .main > * { min-width: 0; }
 
     .hero {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
@@ -132,10 +136,20 @@
       box-shadow: 0 0 0 2px rgba(129,140,248,0.18), inset 0 -2px 0 rgba(129,140,248,0.3);
     }
 
-    .seg { display: flex; gap: 3px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px; }
+    .seg { display: flex; flex-wrap: wrap; min-width: 0; gap: 3px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px; }
     .seg button {
       border: 0; background: transparent; color: var(--muted); padding: 6px 11px; border-radius: 7px;
       cursor: pointer; font-size: 11.5px; font-weight: 700; font-family: 'DM Sans', sans-serif; white-space: nowrap; transition: all 130ms;
+    }
+    /* WCAG 2.2 SC 2.5.8 floors targets at 24px; 44px is the house standard. */
+    .field { min-height: 44px; display: flex; flex-direction: column; justify-content: center; }
+    .field input, .field select { min-height: 24px; }
+    .legend-item { min-height: 24px; display: inline-flex; align-items: center; }
+    .seg button { min-height: 32px; }
+    .icon-btn, .float-btn, .path-clear { min-height: 36px; }
+    @media (pointer: coarse) {
+      .seg button, .icon-btn, .float-btn, .path-clear,
+      .field input, .field select { min-height: 44px; }
     }
     .seg button:hover { background: rgba(129,140,248,0.1); color: var(--text); }
     .seg button.active { background: rgba(129,140,248,0.16); color: var(--text); box-shadow: inset 3px 0 0 #818cf8; }
@@ -387,6 +401,16 @@
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 
     @media (max-width: 1100px) { .main { grid-template-columns: 1fr; } .detail { position: fixed; top: auto; bottom: 0; left: 0; right: 0; width: 100%; max-height: 50vh; border-radius: var(--radius) var(--radius) 0 0; transform: translateY(100%); } .detail.is-open { transform: translateY(0); } }
+    /* At phone width the filters wrapped one per row, pushing the graph a full
+       screen down. Let them share rows so the map is reachable without scrolling. */
+    @media (max-width: 700px) {
+      .field { min-width: 104px; padding: 5px 9px; }
+      .field label { font-size: 8.5px; margin-bottom: 1px; }
+      .toolbar { padding: 9px 10px; gap: 6px; }
+      .hero { padding: 12px 14px; }
+      .map-wrap { height: 62vh; min-height: 380px; }
+      .canvas-head { padding: 8px 10px; }
+    }
     @media (max-width: 700px) { .hero { grid-template-columns: 1fr; } .hero-stats { grid-template-columns: repeat(2,1fr); } }
 
     @media (prefers-color-scheme: light) {
@@ -692,6 +716,7 @@ let pathHistory = [];
 let undoStack = [];
 let redoStack = [];
 let historySuspend = false;
+let userHasSelected = false;
 let lastRecordedPathKey = '';
 
 const state = {
@@ -859,6 +884,7 @@ function restoreMapBookmark(mapId) {
     pathMode: !!entry.pathMode,
     pathTarget: nodeMap[entry.pathTarget] ? entry.pathTarget : null,
   });
+  userHasSelected = !!nodeMap[entry.selectedId];
   syncControlsFromState();
   return true;
 }
@@ -1031,16 +1057,21 @@ function updatePathBar() {
   sourceEl.textContent = srcNode ? srcNode.label : '—';
 
   // Target dropdown — populate with all nodes except source
-  const currentTarget = targetSel.value;
-  targetSel.innerHTML = '<option value="">Select target…</option>';
-  [...nodes].sort((a, b) => a.label.localeCompare(b.label)).forEach(n => {
-    if (n.id === state.selectedId) return;
-    const opt = document.createElement('option');
-    opt.value = n.id;
-    opt.textContent = n.label;
-    if (n.id === state.pathTarget) opt.selected = true;
-    targetSel.appendChild(opt);
-  });
+  // Rebuild only when the option set changes; doing it every render collapsed the
+  // open dropdown and dropped keyboard focus.
+  const wantKey = `${currentMapId}|${state.selectedId}|${nodes.length}`;
+  if (targetSel.dataset.builtFor !== wantKey) {
+    targetSel.dataset.builtFor = wantKey;
+    targetSel.innerHTML = '<option value="">Select target…</option>';
+    [...nodes].sort((a, b) => a.label.localeCompare(b.label)).forEach(n => {
+      if (n.id === state.selectedId) return;
+      const opt = document.createElement('option');
+      opt.value = n.id;
+      opt.textContent = n.label;
+      targetSel.appendChild(opt);
+    });
+  }
+  targetSel.value = state.pathTarget || '';
 
   // Result text
   if (!state.pathTarget) {
@@ -1228,6 +1259,7 @@ async function loadMapPack(mapOrId) {
     // Restore SVG structure (in case status cards replaced it)
     restoreCanvas();
 
+    buildFocusModes();
     setupLegend();
     setupEdgeLegend();
     setupMarkers();
@@ -1368,15 +1400,21 @@ function getNodeGlyph(node) {
 function getInitialTheme() {
   // URL param takes priority
   const urlTheme = readStateFromUrl().theme;
-  if (urlTheme === 'light' || urlTheme === 'dark') return urlTheme;
+  if (isKnownTheme(urlTheme)) return urlTheme;
   try {
     const saved = localStorage.getItem(THEME_KEY);
-    if (saved === 'light' || saved === 'dark') return saved;
+    if (isKnownTheme(saved)) return saved;
   } catch {}
   return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 }
 
+// One source of truth for which themes exist. This used to accept only light and
+// dark, so the other three the popover offers were written to storage and to the
+// URL and then silently rejected on read.
 const THEME_ICONS = { dark:'🌙', light:'☀', instrument:'💎', deepsea:'🌊', terminal:'▶' };
+function isKnownTheme(t) {
+  return typeof t === 'string' && Object.prototype.hasOwnProperty.call(THEME_ICONS, t);
+}
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   const btn = document.getElementById('themeBtn');
@@ -1593,14 +1631,16 @@ function getVisibleIds() {
 }
 
 // ── Render: Focus Modes ──────────────────────────────────────────────────────
-function renderFocusModes() {
+// Built once per map pack. render() only syncs the active state: rebuilding these
+// buttons on every render destroyed whichever one the keyboard was on.
+function buildFocusModes() {
   const modes = presentation.focusModes || [{ id: 'All', label: 'All' }];
   const el = document.getElementById('focusModes');
   el.innerHTML = '';
   modes.forEach(m => {
     const b = document.createElement('button');
     b.textContent = m.label;
-    if (state.focus === m.id) b.classList.add('active');
+    b.dataset.mode = m.id;
     b.onclick = () => {
       pushUndoSnapshot();
       state.focus = m.id;
@@ -1609,6 +1649,15 @@ function renderFocusModes() {
       render();
     };
     el.appendChild(b);
+  });
+  syncFocusModes();
+}
+
+function syncFocusModes() {
+  document.querySelectorAll('#focusModes button').forEach(b => {
+    const on = b.dataset.mode === state.focus;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', String(on));
   });
 }
 
@@ -1725,7 +1774,7 @@ function renderMap(visIds) {
       ${glyph ? `<text class="n-glyph" x="${NW-13}" y="28" text-anchor="end" fill="${col}">${esc(glyph)}</text>` : ''}
       <text class="n-name" x="13" y="48">${esc(displayName)}</text>
       <text class="n-meta" x="13" y="64">${esc(n.layer)} · ${esc(n.status || '')}</text>
-      <text class="n-meta" x="13" y="78">${tags.slice(0,2).map(t=>'#'+t).join('  ')}</text>
+      <text class="n-meta" x="13" y="78">${tags.slice(0,2).map(t=>esc('#'+t)).join('  ')}</text>
       ${state.heatmap ? `<text class="n-degree" x="${NW-12}" y="16" text-anchor="end" fill="${heatCol}">${deg}↔</text>` : ''}
       ${risks.length ? `<text class="n-degree" x="${NW-12}" y="${state.heatmap ? 30 : 16}" text-anchor="end" fill="#f59e0b">!${risks.length}</text>` : ''}
     `;
@@ -1745,6 +1794,7 @@ function renderMap(visIds) {
 
 // ── Node event handlers (shared between initial and restored SVG) ────────────
 function handleNodeClick(e) {
+  userHasSelected = true;
   const g = e.target.closest('.node:not(.dimmed)');
   if (!g) return;
   const id = g.dataset.id;
@@ -1764,6 +1814,7 @@ function handleNodeClick(e) {
 }
 
 function handleNodeKeydown(e) {
+  userHasSelected = true;
   if (e.key !== 'Enter' && e.key !== ' ') return;
   const g = e.target.closest('g[data-id]');
   if (!g) return;
@@ -1781,7 +1832,10 @@ function handleNodeKeydown(e) {
 function renderDetail(visIds) {
   const panel = document.getElementById('detailPanel');
   const drawer = document.getElementById('detailDrawer');
-  if (state.selectedId && visIds.has(state.selectedId)) {
+  // A pack preselects nodes[0] to seed the highlight. Opening the drawer for that
+  // unchosen node buried the graph entirely at phone width, so it waits for a
+  // real selection.
+  if (userHasSelected && state.selectedId && visIds.has(state.selectedId)) {
     drawer.classList.add('is-open');
   } else {
     drawer.classList.remove('is-open');
@@ -1965,7 +2019,7 @@ function renderDetail(visIds) {
   // Path chain click-to-navigate
   panel.querySelectorAll('[data-path-node]').forEach(el => {
     el.addEventListener('click', () => {
-      state.selectedId = el.dataset.pathNode;
+      state.selectedId = el.dataset.pathNode; userHasSelected = true;
       render(false);
     });
   });
@@ -1984,7 +2038,7 @@ function render(refit = true) {
   computePathHighlights();
   recordPathHistory();
   updatePathBar();
-  renderFocusModes();
+  syncFocusModes();
   const visIds = preVisIds;
   renderDataQuality();
   renderStats(visIds);
@@ -2099,7 +2153,7 @@ document.getElementById('pathHistorySelect').addEventListener('change', e => {
   const entry = pathHistory.find((item) => item.key === e.target.value && item.mapId === currentMapId);
   if (!entry) return;
   pushUndoSnapshot();
-  state.selectedId = entry.selectedId;
+  state.selectedId = entry.selectedId; userHasSelected = true;
   state.pathMode = true;
   state.pathTarget = entry.pathTarget;
   layoutCache = null;
@@ -2333,12 +2387,12 @@ document.getElementById('nodeGroup').addEventListener('pointermove', () => clear
   if (!ok) return;
 
   // 5. Apply URL state overrides
-  if (urlState.node && nodeMap[urlState.node]) state.selectedId = urlState.node;
+  if (urlState.node && nodeMap[urlState.node]) { state.selectedId = urlState.node; userHasSelected = true; }
   if (urlState.layer) { state.layer = urlState.layer; document.getElementById('layerF').value = urlState.layer; }
   if (urlState.focus) state.focus = urlState.focus;
   if (urlState.heat === '1') { state.heatmap = true; document.getElementById('heatBtn').textContent = '🌡 Heatmap ON'; }
   if (urlState.q) { state.search = urlState.q; document.getElementById('search').value = urlState.q; }
-  if (urlState.theme) applyTheme(urlState.theme);
+  if (isKnownTheme(urlState.theme)) applyTheme(urlState.theme);
   if (urlState.path) {
     const [src, tgt] = urlState.path.split(',');
     if (src && tgt && nodeMap[src] && nodeMap[tgt]) {
