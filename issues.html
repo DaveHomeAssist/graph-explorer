@@ -26,7 +26,11 @@
     html, body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100%; }
     body { padding: 18px; }
 
-    .page { max-width: 1640px; margin: 0 auto; display: grid; gap: 14px; }
+    .page { max-width: 1640px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    /* Grid items are min-width:auto by default, which let the widest descendant
+       push every top-level block past the viewport at phone width. */
+    .page > * { min-width: 0; }
+    .main > * { min-width: 0; }
 
     .hero {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
@@ -70,10 +74,37 @@
       box-shadow: 0 0 0 2px rgba(129,140,248,0.18);
     }
 
-    .seg { display: flex; gap: 3px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px; }
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: auto;
+      z-index: 10000;
+      padding: 8px 16px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 14px;
+      background: #121c2c;
+      color: #e4ecf8;
+    }
+    .skip-link:focus {
+      left: 10px;
+      top: 10px;
+      outline: 2px solid currentColor;
+    }
+    .seg { display: flex; flex-wrap: wrap; min-width: 0; gap: 3px; background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px; }
     .seg button {
       border: 0; background: transparent; color: var(--muted); padding: 6px 11px; border-radius: 7px;
       cursor: pointer; font-size: 11.5px; font-weight: 700; font-family: 'DM Sans', sans-serif; white-space: nowrap; transition: all 130ms;
+    }
+    /* WCAG 2.2 SC 2.5.8 floors targets at 24px; 44px is the house standard. */
+    .field { min-height: 44px; display: flex; flex-direction: column; justify-content: center; }
+    .field input, .field select { min-height: 24px; }
+    .legend-item { min-height: 24px; display: inline-flex; align-items: center; }
+    .seg button { min-height: 32px; }
+    .icon-btn, .path-clear { min-height: 36px; }
+    @media (pointer: coarse) {
+      .seg button, .icon-btn, .path-clear,
+      .field input, .field select { min-height: 44px; }
     }
     .seg button.active, .seg button:hover { background: rgba(129,140,248,0.14); color: var(--text); }
     .seg button:focus-visible,
@@ -285,7 +316,22 @@
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 
     @media (max-width: 1100px) { .main { grid-template-columns: 1fr; } .detail { position: static; max-height: none; } }
-    @media (max-width: 700px) { .hero { grid-template-columns: 1fr; } .hero-stats { grid-template-columns: repeat(2,1fr); } }
+    /* At phone width the filters wrapped one per row, pushing the graph a full
+       screen down. Let them share rows so the map is reachable without scrolling. */
+    @media (max-width: 700px) {
+      .field { min-width: 104px; padding: 5px 9px; }
+      .field label { font-size: 8.5px; margin-bottom: 1px; }
+      .toolbar { padding: 9px 10px; gap: 6px; }
+      .hero { padding: 12px 14px; }
+      .map-wrap { height: 62vh; min-height: 380px; }
+      .canvas-head { padding: 8px 10px; }
+      /* Four stat cards stacked 2x2 cost ~90px of header before the graph. */
+      .stat { padding: 5px 4px; }
+      .stat-val { font-size: 16px; }
+      .stat-lbl { font-size: 8px; letter-spacing: 0; }
+      .hero p { font-size: 11px; line-height: 1.45; }
+    }
+    @media (max-width: 700px) { .hero { grid-template-columns: 1fr; } .hero-stats { grid-template-columns: repeat(4,1fr); gap: 5px; } }
 
     @media (prefers-color-scheme: light) {
       html:not([data-theme]) {
@@ -394,11 +440,13 @@
   </style>
 </head>
 <body>
+<a href="#app" class="skip-link">Skip to content</a>
 <div class="sr-only" id="announce" aria-live="polite"></div>
 <main class="page" id="app">
   <header class="hero">
     <div>
       <div class="eyebrow" id="eyebrow">🗂 Graph Explorer</div>
+      <p style="margin:0 0 4px"><a href="index.html" class="notion-link" style="font-size:11px">← All maps</a></p>
       <h1 id="heroTitle">Loading…</h1>
       <p id="heroDesc">Loading graph dataset…</p>
     </div>
@@ -963,6 +1011,7 @@ async function loadMapPack(mapOrId) {
     // Restore SVG structure (in case status cards replaced it)
     restoreCanvas();
 
+    buildFocusModes();
     setupLegend();
     setupEdgeLegend();
     setupMarkers();
@@ -1215,14 +1264,16 @@ function getVisibleIds() {
 }
 
 // ── Render: Focus Modes ──────────────────────────────────────────────────────
-function renderFocusModes() {
+// Built once per map pack. render() only syncs the active state: rebuilding these
+// buttons on every render destroyed whichever one the keyboard was on.
+function buildFocusModes() {
   const modes = presentation.focusModes || [{ id: 'All', label: 'All' }];
   const el = document.getElementById('focusModes');
   el.innerHTML = '';
   modes.forEach(m => {
     const b = document.createElement('button');
     b.textContent = m.label;
-    if (state.focus === m.id) b.classList.add('active');
+    b.dataset.mode = m.id;
     b.onclick = () => {
       pushUndoSnapshot();
       state.focus = m.id;
@@ -1231,6 +1282,15 @@ function renderFocusModes() {
       render();
     };
     el.appendChild(b);
+  });
+  syncFocusModes();
+}
+
+function syncFocusModes() {
+  document.querySelectorAll('#focusModes button').forEach(b => {
+    const on = b.dataset.mode === state.focus;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', String(on));
   });
 }
 
@@ -1346,7 +1406,7 @@ function renderMap(visIds) {
       ${glyph ? `<text class="n-glyph" x="${NW-13}" y="28" text-anchor="end" fill="${col}">${esc(glyph)}</text>` : ''}
       <text class="n-name" x="13" y="48">${esc(displayName)}</text>
       <text class="n-meta" x="13" y="64">${esc(n.layer)} · ${esc(n.status || '')}</text>
-      <text class="n-meta" x="13" y="78">${tags.slice(0,2).map(t=>'#'+t).join('  ')}</text>
+      <text class="n-meta" x="13" y="78">${tags.slice(0,2).map(t=>esc('#'+t)).join('  ')}</text>
       ${state.heatmap ? `<text class="n-degree" x="${NW-12}" y="16" text-anchor="end" fill="${heatCol}">${deg}↔</text>` : ''}
       ${risks.length ? `<text class="n-degree" x="${NW-12}" y="${state.heatmap ? 30 : 16}" text-anchor="end" fill="#f59e0b">!${risks.length}</text>` : ''}
     `;
@@ -1567,7 +1627,7 @@ function render(refit = true) {
   computePathHighlights();
   recordPathHistory();
   updatePathBar();
-  renderFocusModes();
+  syncFocusModes();
   const visIds = getVisibleIds();
   renderDataQuality();
   renderStats(visIds);
