@@ -103,6 +103,8 @@
     }
     .float-btn:hover { background: var(--panel-2); transform: scale(1.08); }
     .export-popover { position:absolute;bottom:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:4px;display:flex;flex-direction:column;gap:2px;min-width:80px; }
+    /* display:flex above outranks the UA [hidden] rule, so hidden must be restated. */
+    .export-popover[hidden] { display: none; }
     .export-opt { border:none;background:transparent;color:var(--text);padding:5px 12px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;border-radius:4px;text-align:left; }
     .export-opt:hover { background:var(--panel-2); }
 
@@ -160,7 +162,7 @@
 
     .main { display: grid; grid-template-columns: 1fr; gap: 14px; align-items: start; position: relative; }
 
-    .canvas { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .canvas { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; position: relative; }
 
     .canvas-head {
       display: flex; justify-content: space-between; align-items: center;
@@ -536,6 +538,8 @@
 
     /* ── Theme Manager Popover ── */
     .theme-popover { position:absolute;bottom:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px;display:flex;flex-direction:column;gap:3px;min-width:160px;z-index:30; }
+    /* display:flex above outranks the UA [hidden] rule, so hidden must be restated. */
+    .theme-popover[hidden] { display: none; }
     .theme-opt { display:flex;align-items:center;gap:8px;border:none;background:transparent;color:var(--text);padding:6px 10px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;border-radius:5px;text-align:left;width:100%; }
     .theme-opt:hover { background:var(--panel-2); }
     .theme-opt.active { background:rgba(129,140,248,0.12);color:#a5b4fc; }
@@ -606,30 +610,6 @@
         </div>
       </div>
       <div class="map-wrap" id="mapWrap">
-        <div class="canvas-float-toolbar">
-          <button class="float-btn" id="fitBtn" title="Fit to view">⊡</button>
-          <button class="float-btn" id="heatBtn" title="Toggle heatmap">🌡</button>
-          <div style="position:relative">
-            <button class="float-btn" id="themeBtn" title="Switch theme">☀</button>
-            <div class="theme-popover" id="themePopover" hidden>
-              <button class="theme-opt" data-theme-val="dark"><span class="theme-swatch" style="background:#070b12"></span>Default Dark</button>
-              <button class="theme-opt" data-theme-val="light"><span class="theme-swatch" style="background:#f0f2f7"></span>Light</button>
-              <button class="theme-opt" data-theme-val="instrument"><span class="theme-swatch" style="background:#0A0A10;border-color:#9B59F5"></span>Instrument Grade</button>
-              <button class="theme-opt" data-theme-val="deepsea"><span class="theme-swatch" style="background:#020B18;border-color:#4DC8E8"></span>Deep Sea</button>
-              <button class="theme-opt" data-theme-val="terminal"><span class="theme-swatch" style="background:#0D0D0D;border-color:#00FF41"></span>Terminal</button>
-            </div>
-          </div>
-          <button class="float-btn" id="shareBtn" title="Copy share link">🔗</button>
-          <button class="float-btn" id="themeEditorBtn" title="Theme editor">🎨</button>
-          <div style="position:relative">
-            <button class="float-btn" id="exportBtn" title="Export">📥</button>
-            <div class="export-popover" id="exportPopover" hidden>
-              <button class="export-opt" data-fmt="svg">SVG</button>
-              <button class="export-opt" data-fmt="png">PNG</button>
-              <button class="export-opt" data-fmt="json">JSON</button>
-            </div>
-          </div>
-        </div>
         <svg id="map" role="img" aria-label="Graph explorer system map">
           <defs id="markerDefs"></defs>
           <g id="zoomGroup">
@@ -642,6 +622,30 @@
             <div class="status-icon">🔎</div>
             <div class="status-title">No nodes match these filters</div>
             <div>Adjust search, layer, or focus mode to bring the graph back into view.</div>
+          </div>
+        </div>
+      </div>
+      <div class="canvas-float-toolbar">
+        <button class="float-btn" id="fitBtn" title="Fit to view">⊡</button>
+        <button class="float-btn" id="heatBtn" title="Toggle heatmap">🌡</button>
+        <div style="position:relative">
+          <button class="float-btn" id="themeBtn" title="Switch theme">☀</button>
+          <div class="theme-popover" id="themePopover" hidden>
+            <button class="theme-opt" data-theme-val="dark"><span class="theme-swatch" style="background:#070b12"></span>Default Dark</button>
+            <button class="theme-opt" data-theme-val="light"><span class="theme-swatch" style="background:#f0f2f7"></span>Light</button>
+            <button class="theme-opt" data-theme-val="instrument"><span class="theme-swatch" style="background:#0A0A10;border-color:#9B59F5"></span>Instrument Grade</button>
+            <button class="theme-opt" data-theme-val="deepsea"><span class="theme-swatch" style="background:#020B18;border-color:#4DC8E8"></span>Deep Sea</button>
+            <button class="theme-opt" data-theme-val="terminal"><span class="theme-swatch" style="background:#0D0D0D;border-color:#00FF41"></span>Terminal</button>
+          </div>
+        </div>
+        <button class="float-btn" id="shareBtn" title="Copy share link">🔗</button>
+        <button class="float-btn" id="themeEditorBtn" title="Theme editor">🎨</button>
+        <div style="position:relative">
+          <button class="float-btn" id="exportBtn" title="Export">📥</button>
+          <div class="export-popover" id="exportPopover" hidden>
+            <button class="export-opt" data-fmt="svg">SVG</button>
+            <button class="export-opt" data-fmt="png">PNG</button>
+            <button class="export-opt" data-fmt="json">JSON</button>
           </div>
         </div>
       </div>
@@ -1437,7 +1441,14 @@ const mapWrap = document.getElementById('mapWrap');
 let clusterMode = false;
 const CLUSTER_THRESHOLD = 0.6;
 
-const zoom = d3.zoom().scaleExtent([0.35, 6]).on('zoom', e => {
+// Zoom bounds. MIN_ZOOM is the floor for BOTH interactive zoom and fitToView, so
+// the two can never disagree about how far out a graph may be framed: the shipped
+// ecosystem-issues pack needs ~0.17 to fit, well under the old 0.35. MAX_FIT_ZOOM
+// is separate so a two-node map is not magnified absurdly on load.
+const MIN_ZOOM = 0.1;
+const MAX_ZOOM = 6;
+const MAX_FIT_ZOOM = 2.2;
+const zoom = d3.zoom().scaleExtent([MIN_ZOOM, MAX_ZOOM]).on('zoom', e => {
   const zg = document.getElementById('zoomGroup');
   if (zg) zg.setAttribute('transform', e.transform);
   const wasCluster = clusterMode;
@@ -1461,8 +1472,8 @@ function fitToView(w, h) {
   svgEl.setAttribute('height', wh);
 
   const fitScale = Math.min(ww / w, wh / h);
-  let scale = fitScale * 2.4;
-  scale = Math.max(0.85, Math.min(2.2, scale));
+  // Fit means fit: never scale past what the viewport can show.
+  let scale = Math.max(MIN_ZOOM, Math.min(MAX_FIT_ZOOM, fitScale));
 
   const tx = (ww - w * scale) / 2;
   const ty = (wh - h * scale) / 2;
@@ -2038,9 +2049,16 @@ document.getElementById('heatBtn').addEventListener('click', () => {
 });
 
 // Theme manager popover
+// The popovers live outside #mapWrap, but never assume they are present:
+// a null here used to throw on every click in the document.
+function hidePopover(id) {
+  const el = document.getElementById(id);
+  if (el) el.hidden = true;
+}
 document.getElementById('themeBtn').addEventListener('click', (e) => {
   e.stopPropagation();
   const pop = document.getElementById('themePopover');
+  if (!pop) return;
   pop.hidden = !pop.hidden;
   if (!pop.hidden) {
     const current = document.documentElement.getAttribute('data-theme') || 'dark';
@@ -2053,13 +2071,13 @@ document.querySelectorAll('.theme-opt').forEach(btn => {
     applyTheme(t);
     try { localStorage.setItem(THEME_KEY, t); } catch {}
     writeStateToUrl();
-    document.getElementById('themePopover').hidden = true;
+    hidePopover('themePopover');
     showToast('Theme: ' + btn.textContent.trim());
   });
 });
 document.addEventListener('click', (e) => {
   if (!e.target.closest('#themeBtn') && !e.target.closest('.theme-popover')) {
-    document.getElementById('themePopover').hidden = true;
+    hidePopover('themePopover');
   }
 });
 
@@ -2125,11 +2143,12 @@ document.getElementById('shareBtn').addEventListener('click', () => {
 // Feature 2: Export
 document.getElementById('exportBtn').addEventListener('click', () => {
   const pop = document.getElementById('exportPopover');
+  if (!pop) return;
   pop.hidden = !pop.hidden;
 });
 document.querySelectorAll('.export-opt').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.getElementById('exportPopover').hidden = true;
+    hidePopover('exportPopover');
     const fmt = btn.dataset.fmt;
     if (fmt === 'svg') exportSVG();
     else if (fmt === 'png') exportPNG();
@@ -2138,7 +2157,7 @@ document.querySelectorAll('.export-opt').forEach(btn => {
 });
 document.addEventListener('click', (e) => {
   if (!e.target.closest('#exportBtn') && !e.target.closest('.export-popover')) {
-    document.getElementById('exportPopover').hidden = true;
+    hidePopover('exportPopover');
   }
 });
 
@@ -2373,7 +2392,7 @@ function showCoach() {
         <button id="coachNext" style="padding:6px 18px;border:none;border-radius:8px;background:#818cf8;color:#fff;font-size:13px;font-weight:600;cursor:pointer">${isLast ? 'Got it' : 'Next'}</button>
       </div>
     </div>`;
-    document.getElementById('coachNext').onclick = () => {
+    overlay.querySelector('#coachNext').onclick = () => {
       step++;
       if (step >= steps.length) {
         overlay.remove();

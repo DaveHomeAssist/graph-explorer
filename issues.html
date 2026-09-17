@@ -1148,7 +1148,14 @@ function computeLayout(visibleIds) {
 // ── D3 Zoom ──────────────────────────────────────────────────────────────────
 const mapWrap = document.getElementById('mapWrap');
 
-const zoom = d3.zoom().scaleExtent([0.35, 6]).on('zoom', e => {
+// Zoom bounds. MIN_ZOOM is the floor for BOTH interactive zoom and fitToView, so
+// the two can never disagree about how far out a graph may be framed: the shipped
+// ecosystem-issues pack needs ~0.17 to fit, well under the old 0.35. MAX_FIT_ZOOM
+// is separate so a two-node map is not magnified absurdly on load.
+const MIN_ZOOM = 0.1;
+const MAX_ZOOM = 6;
+const MAX_FIT_ZOOM = 2.2;
+const zoom = d3.zoom().scaleExtent([MIN_ZOOM, MAX_ZOOM]).on('zoom', e => {
   const zg = document.getElementById('zoomGroup');
   if (zg) zg.setAttribute('transform', e.transform);
 });
@@ -1168,8 +1175,8 @@ function fitToView(w, h) {
   svgEl.setAttribute('height', wh);
 
   const fitScale = Math.min(ww / w, wh / h);
-  let scale = fitScale * 2.4;
-  scale = Math.max(0.85, Math.min(2.2, scale));
+  // Fit means fit: never scale past what the viewport can show.
+  let scale = Math.max(MIN_ZOOM, Math.min(MAX_FIT_ZOOM, fitScale));
 
   const tx = (ww - w * scale) / 2;
   const ty = (wh - h * scale) / 2;
