@@ -1438,12 +1438,17 @@ function handleNodeClick(e) {
   const g = e.target.closest('.node:not(.dimmed)');
   if (!g) return;
   const id = g.dataset.id;
+  // Toggling focus rebuilds the whole layout, so the camera has to follow it.
+  // Every other filter that invalidates layoutCache refits; this one did not,
+  // which left the focused subgraph stranded wherever the old transform put it.
+  let relayout = false;
   if (state.selectedId === id) {
     state.focusNode = state.focusNode === id ? null : id;
     layoutCache = null;
+    relayout = true;
   }
   state.selectedId = id;
-  render(false);
+  render(relayout);
 }
 
 const ARROW_KEYS = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'];
@@ -1470,12 +1475,17 @@ function handleNodeKeydown(e) {
   if (!g) return;
   e.preventDefault();
   const id = g.dataset.id;
+  // Toggling focus rebuilds the whole layout, so the camera has to follow it.
+  // Every other filter that invalidates layoutCache refits; this one did not,
+  // which left the focused subgraph stranded wherever the old transform put it.
+  let relayout = false;
   if (state.selectedId === id) {
     state.focusNode = state.focusNode === id ? null : id;
     layoutCache = null;
+    relayout = true;
   }
   state.selectedId = id;
-  render(false);
+  render(relayout);
 }
 
 // ── Render: Detail Panel (Dataset-Agnostic) ──────────────────────────────────
