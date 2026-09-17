@@ -2,7 +2,7 @@
 
 A static, zero-dependency node graph viewer — load any JSON "map pack" and explore it as an interactive topology: filter by layer, trace paths between nodes, and inspect details in a side panel. Live at **[davehomeassist.github.io/graph-explorer](https://davehomeassist.github.io/graph-explorer/)**.
 
-One viewer, many interchangeable datasets. There's no backend, no build step, and no persistence — everything runs in the browser, rendered with [D3.js](https://d3js.org/) and [Dagre](https://github.com/dagrejs/dagre) via pinned CDN links.
+One viewer, many interchangeable datasets. There's no backend and no build step — everything runs in the browser, rendered with [D3.js](https://d3js.org/) and [Dagre](https://github.com/dagrejs/dagre) via pinned CDN links. Your map bookmarks, recent paths, theme and onboarding state persist in four `localStorage` keys, documented in [CLAUDE.md](CLAUDE.md#persistence); nothing leaves the device.
 
 ## What's here
 
