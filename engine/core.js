@@ -26,7 +26,18 @@ export function esc(str) {
 
 export function populateSelect(id, values) {
   const el = document.getElementById(id);
-  el.innerHTML = ['All', ...new Set(values)].map(v => `<option value="${v}">${v}</option>`).join('');
+  if (!el) return;
+  const previous = el.value;
+  el.innerHTML = '';
+  ['All', ...new Set(values)].forEach((v) => {
+    const opt = document.createElement('option');
+    opt.value = String(v ?? '');
+    opt.textContent = String(v ?? '');
+    el.appendChild(opt);
+  });
+  // Values come from map-pack data. Building options as DOM rather than markup
+  // means a layer named `" onmouseover="` cannot break out of the attribute.
+  if ([...el.options].some((o) => o.value === previous)) el.value = previous;
 }
 
 export function getMapLabel(entry) {

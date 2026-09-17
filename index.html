@@ -634,7 +634,7 @@
         </div>
       </div>
       <div class="map-wrap" id="mapWrap">
-        <svg id="map" role="img" aria-label="Graph explorer system map">
+        <svg id="map" role="group" aria-label="Graph explorer system map">
           <defs id="markerDefs"></defs>
           <g id="zoomGroup">
             <g id="edgeGroup"></g>
@@ -749,9 +749,24 @@ function showToast(msg) {
 
 // ── Export Functions ──────────────────────────────────────────────────────────
 function downloadBlob(blob, filename) {
+  if (!blob) { showToast('Export failed'); return; }
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.rel = 'noopener';
+  // Firefox needs the anchor in the document, and revoking in the same tick can
+  // abort the download before it starts.
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 0);
+}
+
+// The SVG takes its paint from the page stylesheet, and the theme decides the
+// page background. A PNG exported from Light used to arrive on a dark slab.
+function currentCanvasBackground() {
+  const wrap = document.getElementById('mapWrap');
+  const probe = wrap ? getComputedStyle(wrap).backgroundColor : '';
+  if (probe && probe !== 'transparent' && !/rgba\(0,\s*0,\s*0,\s*0\)/.test(probe)) return probe;
+  return getComputedStyle(document.body).backgroundColor || '#070b12';
 }
 
 function exportSVG() {
@@ -772,13 +787,19 @@ function exportPNG() {
   clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   const xml = new XMLSerializer().serializeToString(clone);
   const img = new Image();
-  const w = svgEl.clientWidth * 2, h = svgEl.clientHeight * 2;
+  const w = Math.max(1, svgEl.clientWidth * 2), h = Math.max(1, svgEl.clientHeight * 2);
+  const background = currentCanvasBackground();
   img.onload = function() {
     const c = document.createElement('canvas'); c.width = w; c.height = h;
-    const ctx = c.getContext('2d'); ctx.fillStyle = '#070b12'; ctx.fillRect(0,0,w,h);
+    const ctx = c.getContext('2d'); ctx.fillStyle = background; ctx.fillRect(0,0,w,h);
     ctx.drawImage(img, 0, 0, w, h);
-    c.toBlob(function(blob) { downloadBlob(blob, (currentMapId||'graph')+'-plot.png'); showToast('PNG exported'); });
+    c.toBlob(function(blob) {
+      if (!blob) { showToast('PNG export failed'); return; }
+      downloadBlob(blob, (currentMapId||'graph')+'-plot.png');
+      showToast('PNG exported');
+    });
   };
+  img.onerror = function() { showToast('PNG export failed'); };
   img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
 }
 
@@ -1278,7 +1299,7 @@ function restoreCanvas() {
   wrap.innerHTML = '';
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.id = 'map';
-  svg.setAttribute('role', 'img');
+  svg.setAttribute('role', 'group');
   svg.setAttribute('aria-label', 'Graph explorer system map');
 
   const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
@@ -1308,7 +1329,7 @@ function restoreCanvas() {
   wrap.appendChild(empty);
 
   // Re-bind D3 zoom
-  d3.select(svg).call(zoom);
+  if (zoom) d3.select(svg).call(zoom);
   // Re-bind node keyboard handler
   ng.addEventListener('keydown', handleNodeKeydown);
   ng.onclick = handleNodeClick;
@@ -1321,7 +1342,7 @@ function setupLegend() {
     : Object.entries(layers).map(([label, color]) => ({ label, color }));
   const el = document.getElementById('legend');
   el.innerHTML = items.map((item) =>
-    `<span class="legend-item is-clickable" data-layer="${esc(item.label)}" role="button" tabindex="0" title="Click to filter by ${esc(item.label)}">${item.glyph ? `<span class="legend-glyph">${esc(item.glyph)}</span>` : `<span class="dot" style="background:${item.color}"></span>`}${esc(item.label)}</span>`
+    `<span class="legend-item is-clickable" data-layer="${esc(item.label)}" role="button" tabindex="0" title="Click to filter by ${esc(item.label)}">${item.glyph ? `<span class="legend-glyph">${esc(item.glyph)}</span>` : `<span class="dot" style="background:${esc(item.color)}"></span>`}${esc(item.label)}</span>`
   ).join('');
   function syncLegendActive() {
     el.querySelectorAll('.legend-item.is-clickable').forEach(li => {
@@ -1346,8 +1367,10 @@ function setupLegend() {
 function setupEdgeLegend() {
   const styles = presentation.edgeStyles || {};
   document.getElementById('edgeLegend').innerHTML = Object.entries(styles).map(([name, s]) => {
-    const dash = s.dasharray ? ` stroke-dasharray="${s.dasharray}"` : '';
-    return `<span class="legend-item"><svg width="22" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="${s.stroke}" stroke-width="1.5"${dash}/></svg> ${name}</span>`;
+    const dash = s.dasharray ? ` stroke-dasharray="${esc(s.dasharray)}"` : '';
+    // aria-hidden: these rules are decoration beside the label, and unlabelled
+    // <svg> elements otherwise surface as anonymous images to assistive tech.
+    return `<span class="legend-item"><svg width="22" height="8" aria-hidden="true" focusable="false"><line x1="0" y1="4" x2="22" y2="4" stroke="${esc(s.stroke)}" stroke-width="1.5"${dash}/></svg> ${esc(name)}</span>`;
   }).join('');
 }
 
@@ -1486,7 +1509,9 @@ const CLUSTER_THRESHOLD = 0.6;
 const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 6;
 const MAX_FIT_ZOOM = 2.2;
-const zoom = d3.zoom().scaleExtent([MIN_ZOOM, MAX_ZOOM]).on('zoom', e => {
+// Guarded so a blocked CDN cannot kill the module before boot() can report it.
+const zoom = typeof d3 === 'undefined' ? null
+  : d3.zoom().scaleExtent([MIN_ZOOM, MAX_ZOOM]).on('zoom', e => {
   const zg = document.getElementById('zoomGroup');
   if (zg) zg.setAttribute('transform', e.transform);
   const wasCluster = clusterMode;
@@ -1495,7 +1520,7 @@ const zoom = d3.zoom().scaleExtent([MIN_ZOOM, MAX_ZOOM]).on('zoom', e => {
   writeStateToUrl();
 });
 
-d3.select(document.getElementById('map')).call(zoom);
+if (zoom) d3.select(document.getElementById('map')).call(zoom);
 mapWrap.addEventListener('mousedown', () => mapWrap.classList.add('panning'));
 window.addEventListener('mouseup', () => mapWrap.classList.remove('panning'));
 window.addEventListener('blur', () => mapWrap.classList.remove('panning'));
@@ -1685,6 +1710,11 @@ function renderStats(visIds) {
 
 // ── Render: Map ──────────────────────────────────────────────────────────────
 function renderMap(visIds) {
+  // The one node that carries tabindex="0": the selection when it is visible,
+  // otherwise the first visible node, so the graph is always reachable by Tab.
+  const rovingId = (state.selectedId && visIds.has(state.selectedId))
+    ? state.selectedId
+    : [...visIds][0];
   computeLayout(visIds);
   const positions = layoutCache.positions;
   const { offX, offY } = layoutCache;
@@ -1758,24 +1788,27 @@ function renderMap(visIds) {
     g.setAttribute('class', `node${n.id === state.selectedId ? ' selected' : ''}${!vis ? ' dimmed' : ''}${state.heatmap ? ' heat-visible' : ''}${isPathSrc ? ' path-source' : ''}${isPathTgt ? ' path-target' : ''}${isPathNode && !isPathSrc && !isPathTgt ? ' path-hit' : ''}${isPathDimNode ? ' path-dim' : ''}`);
     g.setAttribute('data-id', n.id);
     g.setAttribute('transform', `translate(${px},${py})`);
-    g.setAttribute('tabindex', vis ? 0 : -1);
+    // Roving tabindex: the graph is ONE tab stop, arrow keys move within it.
+    // Every node being tabbable cost 26 stops on a 24-node map and scaled with
+    // the pack.
+    g.setAttribute('tabindex', vis && n.id === rovingId ? 0 : -1);
     if (vis) {
       g.setAttribute('role', 'button');
       g.setAttribute('aria-label', n.label);
     }
 
-    const selGlow = n.id === state.selectedId ? `filter:drop-shadow(0 0 14px ${col}44)` : '';
+    const selGlow = n.id === state.selectedId ? `filter:drop-shadow(0 0 14px ${esc(col)}44)` : '';
     const displayName = n.label.length > 27 ? n.label.slice(0, 26) + '…' : n.label;
     g.innerHTML = `
-      <circle class="heat-ring" cx="${NW/2}" cy="${NH/2}" r="${Math.max(NW,NH)*0.6}" stroke="${heatCol}"/>
-      <rect class="bg" width="${NW}" height="${NH}" rx="13" style="${n.id===state.selectedId?`stroke:${col};${selGlow}`:''}"/>
-      <rect class="n-bar" x="13" y="12" width="36" height="5" fill="${col}" opacity="0.85"/>
-      <text class="n-type" x="13" y="28" fill="${col}">${esc(n.type)}</text>
-      ${glyph ? `<text class="n-glyph" x="${NW-13}" y="28" text-anchor="end" fill="${col}">${esc(glyph)}</text>` : ''}
+      <circle class="heat-ring" cx="${NW/2}" cy="${NH/2}" r="${Math.max(NW,NH)*0.6}" stroke="${esc(heatCol)}"/>
+      <rect class="bg" width="${NW}" height="${NH}" rx="13" style="${n.id===state.selectedId?`stroke:${esc(col)};${selGlow}`:''}"/>
+      <rect class="n-bar" x="13" y="12" width="36" height="5" fill="${esc(col)}" opacity="0.85"/>
+      <text class="n-type" x="13" y="28" fill="${esc(col)}">${esc(n.type)}</text>
+      ${glyph ? `<text class="n-glyph" x="${NW-13}" y="28" text-anchor="end" fill="${esc(col)}">${esc(glyph)}</text>` : ''}
       <text class="n-name" x="13" y="48">${esc(displayName)}</text>
       <text class="n-meta" x="13" y="64">${esc(n.layer)} · ${esc(n.status || '')}</text>
       <text class="n-meta" x="13" y="78">${tags.slice(0,2).map(t=>esc('#'+t)).join('  ')}</text>
-      ${state.heatmap ? `<text class="n-degree" x="${NW-12}" y="16" text-anchor="end" fill="${heatCol}">${deg}↔</text>` : ''}
+      ${state.heatmap ? `<text class="n-degree" x="${NW-12}" y="16" text-anchor="end" fill="${esc(heatCol)}">${deg}↔</text>` : ''}
       ${risks.length ? `<text class="n-degree" x="${NW-12}" y="${state.heatmap ? 30 : 16}" text-anchor="end" fill="#f59e0b">!${risks.length}</text>` : ''}
     `;
     if (vis) {
@@ -1813,9 +1846,28 @@ function handleNodeClick(e) {
   render(false);
 }
 
+const ARROW_KEYS = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'];
+
 function handleNodeKeydown(e) {
-  userHasSelected = true;
+  if (ARROW_KEYS.includes(e.key)) {
+    e.preventDefault();
+    const order = [...document.querySelectorAll('#nodeGroup > g[data-id]')]
+      .filter((g) => g.getAttribute('aria-label'));
+    if (!order.length) return;
+    const here = e.target.closest('g[data-id]');
+    const at = Math.max(0, order.indexOf(here));
+    let next;
+    if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = order.length - 1;
+    else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (at + 1) % order.length;
+    else next = (at - 1 + order.length) % order.length;
+    order.forEach((g, i) => g.setAttribute('tabindex', i === next ? 0 : -1));
+    order[next].focus();
+    return;
+  }
   if (e.key !== 'Enter' && e.key !== ' ') return;
+  // Only an actual activation counts as the user choosing a node.
+  userHasSelected = true;
   const g = e.target.closest('g[data-id]');
   if (!g) return;
   e.preventDefault();
@@ -1828,6 +1880,18 @@ function handleNodeKeydown(e) {
   render(false);
 }
 
+// Closing the drawer used to drop focus on <body>, stranding keyboard users at
+// the top of the document. Hand it back to the node that opened the drawer.
+function closeDetailDrawer() {
+  const drawer = document.getElementById('detailDrawer');
+  if (!drawer) return;
+  drawer.classList.remove('is-open');
+  drawer.setAttribute('aria-hidden', 'true');
+  const origin = state.selectedId
+    && document.querySelector(`#nodeGroup > g[data-id="${CSS.escape(state.selectedId)}"]`);
+  if (origin && typeof origin.focus === 'function') origin.focus();
+}
+
 // ── Render: Detail Panel (Dataset-Agnostic) ──────────────────────────────────
 function renderDetail(visIds) {
   const panel = document.getElementById('detailPanel');
@@ -1835,11 +1899,11 @@ function renderDetail(visIds) {
   // A pack preselects nodes[0] to seed the highlight. Opening the drawer for that
   // unchosen node buried the graph entirely at phone width, so it waits for a
   // real selection.
-  if (userHasSelected && state.selectedId && visIds.has(state.selectedId)) {
-    drawer.classList.add('is-open');
-  } else {
-    drawer.classList.remove('is-open');
-  }
+  const open = userHasSelected && state.selectedId && visIds.has(state.selectedId);
+  drawer.classList.toggle('is-open', !!open);
+  // A drawer that is off-screen must also be out of the accessibility tree,
+  // otherwise its controls stay reachable as phantom tab stops.
+  drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
   if (!visIds.size) {
     let filters = '';
     if (state.search) filters += `<button class="clear-filter-btn" data-clear="search">search: "${esc(state.search)}" ✕</button> `;
@@ -1950,7 +2014,7 @@ function renderDetail(visIds) {
       <div class="d-title">${esc(n.label)}</div>
       ${meta.desc ? `<p class="d-desc">${esc(meta.desc)}</p>` : ''}
       <div class="chips">
-        <span class="chip" style="color:${col};border-color:${col}30">${esc(n.layer)}</span>
+        <span class="chip" style="color:${esc(col)};border-color:${esc(col)}30">${esc(n.layer)}</span>
         ${n.status ? `<span class="chip">${esc(n.status)}</span>` : ''}
       </div>
       ${linkHtml}
@@ -1989,7 +2053,7 @@ function renderDetail(visIds) {
           const pn = nodeMap[id];
           const marker = i === 0 ? '●' : i === pathSteps.length - 1 ? '◎' : '→';
           const col = i === 0 ? '#34d399' : i === pathSteps.length - 1 ? '#f59e0b' : '#818cf8';
-          return `<li style="color:${col};cursor:pointer" data-path-node="${id}">${marker} ${esc(pn?.label || id)} <span>(${esc(pn?.layer || '')})</span></li>`;
+          return `<li style="color:${esc(col)};cursor:pointer" data-path-node="${esc(id)}">${marker} ${esc(pn?.label || id)} <span>(${esc(pn?.layer || '')})</span></li>`;
         }).join('')}
       </ul>
     </div>` : ''}
@@ -2056,7 +2120,7 @@ function render(refit = true) {
 function setupMapSelector(maps, initialId) {
   const sel = document.getElementById('mapSelect');
   sel.innerHTML = maps.map(m =>
-    `<option value="${m.id}" title="${esc(m.description || '')}">${esc(getMapLabel(m))}</option>`
+    `<option value="${esc(m.id)}" title="${esc(m.description || '')}">${esc(getMapLabel(m))}</option>`
   ).join('');
   sel.value = initialId;
 
@@ -2303,7 +2367,7 @@ document.getElementById('redoBtn').addEventListener('click', performRedo);
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
     const drawer = document.getElementById('detailDrawer');
-    if (drawer.classList.contains('is-open')) { drawer.classList.remove('is-open'); return; }
+    if (drawer.classList.contains('is-open')) { closeDetailDrawer(); return; }
   }
   const meta = event.metaKey || event.ctrlKey;
   if (!meta) return;
@@ -2322,7 +2386,7 @@ document.addEventListener('keydown', (event) => {
 
 // Detail drawer close button
 document.getElementById('detailClose').addEventListener('click', () => {
-  document.getElementById('detailDrawer').classList.remove('is-open');
+  closeDetailDrawer();
 });
 
 // Bind initial node group handlers
@@ -2366,6 +2430,18 @@ document.getElementById('nodeGroup').addEventListener('pointermove', () => clear
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 (async function boot() {
+  // A blocked or offline CDN used to leave the page on "Loading…" forever with
+  // no message, because the module died on the first d3 reference.
+  const missing = [];
+  if (typeof d3 === 'undefined') missing.push('D3');
+  if (typeof dagre === 'undefined') missing.push('Dagre');
+  if (missing.length) {
+    showError('Required libraries failed to load', [
+      `${missing.join(' and ')} could not be fetched from the CDN.`,
+      'Check the network connection or any content blocker, then reload.',
+    ]);
+    return;
+  }
   const urlState = readStateFromUrl();
   loadPathHistory();
   updateUndoButtons();
