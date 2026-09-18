@@ -60,12 +60,13 @@ served locally, on both pages.
 
 These remain open after the September 17 repair and privacy passes.
 
-1. **Warnings are still count-only.** The quality badge reports how many validation warnings exist, but there is no click-to-inspect detail surface.
-2. **No structured data (JSON-LD).** Meta tags and Open Graph are present, but the public page has no structured-data block.
-3. **No automated browser regression gate.** The repository still relies on manual/headless verification outside CI, so main can publish without exercising the critical boot, fit, theme, filter, and share paths.
-4. **CDN dependencies remain a runtime availability dependency.** D3 and Dagre failure now produces a useful error, but the viewer cannot render while those CDN assets are unavailable.
+1. **No structured data (JSON-LD).** Meta tags and Open Graph are present, but the public page has no structured-data block.
 
 ### Fixed since this document was first written
+
+- Browser Smoke workflow passed on GitHub Actions after local vendoring and warning-inspector changes, covering both viewers, synthetic validation warnings, and private-path 404s.
+- Validation warnings are inspectable through an accessible warning disclosure.
+- D3 7.8.5 and Dagre 0.8.5 are local vendor assets; core graph rendering no longer depends on cdnjs at runtime.
 
 - Floating toolbar now clears the detail drawer on desktop and mobile.
 - BFS uses a queue cursor instead of `queue.shift()`.
