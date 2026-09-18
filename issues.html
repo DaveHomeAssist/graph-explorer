@@ -649,10 +649,12 @@ function restoreMapBookmark(mapId) {
   const bookmarks = readMapBookmarks();
   const entry = bookmarks[mapId];
   if (!entry) return false;
+  const validLayers = new Set(['All', ...nodes.map(node => node.layer).filter(Boolean)]);
+  const validFocusModes = new Set((presentation.focusModes || [{ id: 'All' }]).map(mode => mode.id));
   Object.assign(state, {
-    search: entry.search || '',
-    layer: entry.layer || 'All',
-    focus: entry.focus || 'All',
+    search: typeof entry.search === 'string' ? entry.search : '',
+    layer: validLayers.has(entry.layer) ? entry.layer : 'All',
+    focus: validFocusModes.has(entry.focus) ? entry.focus : 'All',
     selectedId: nodeMap[entry.selectedId] ? entry.selectedId : (nodes[0]?.id || null),
     focusNode: nodeMap[entry.focusNode] ? entry.focusNode : null,
     heatmap: !!entry.heatmap,
@@ -1268,7 +1270,7 @@ function getVisibleIds() {
   if (state.focusNode) {
     const nbrs = adjacency[state.focusNode] || new Set();
     const focusIds = new Set([state.focusNode, ...nbrs]);
-    base = nodes.filter(n => focusIds.has(n.id));
+    base = base.filter(n => focusIds.has(n.id));
   }
 
   return new Set(base.map(n => n.id));
@@ -1669,11 +1671,19 @@ function renderDetail(visIds) {
 
 // ── Render: Orchestrator ─────────────────────────────────────────────────────
 function render(refit = true) {
+  // Keep path state consistent with filters/focus. Hidden endpoints cannot
+  // remain active path endpoints.
+  const visIds = getVisibleIds();
+  if (state.pathMode && state.selectedId && !visIds.has(state.selectedId)) {
+    state.selectedId = null; pathNodeIds.clear(); pathEdgeKeys.clear(); pathSteps = [];
+  }
+  if (state.pathMode && state.pathTarget && !visIds.has(state.pathTarget)) {
+    state.pathTarget = null; pathNodeIds.clear(); pathEdgeKeys.clear(); pathSteps = [];
+  }
   computePathHighlights();
   recordPathHistory();
   updatePathBar();
   syncFocusModes();
-  const visIds = getVisibleIds();
   renderDataQuality();
   renderStats(visIds);
   renderMap(visIds);
@@ -1690,7 +1700,7 @@ function render(refit = true) {
 function setupMapSelector(maps, initialId) {
   const sel = document.getElementById('mapSelect');
   sel.innerHTML = maps.map(m =>
-    `<option value="${m.id}" title="${esc(m.description || '')}">${esc(getMapLabel(m))}</option>`
+    `<option value="${esc(m.id)}" title="${esc(m.description || '')}">${esc(getMapLabel(m))}</option>`
   ).join('');
   sel.value = initialId;
 
