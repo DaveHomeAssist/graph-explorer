@@ -251,7 +251,7 @@ Nodes are services, databases, APIs, and infrastructure. Edges are calls, data f
 **Layers:** `Frontend`, `Backend`, `Data`, `Infrastructure`, `External`
 **Edge types:** `calls`, `data`, `reference`
 
-See `maps/software-architecture/` for the complete working example.
+See `maps/sample-devops-pipeline/` for a public working architecture example.
 
 ### Org Chart
 
@@ -262,14 +262,14 @@ Nodes are people, teams, and departments. Edges are reporting lines and cross-fu
 
 See `maps/sample-org-chart/` for the complete working example.
 
-### Run Tree (PromptLab export)
+### Run Tree (sample AI workflow export)
 
 Nodes are traces, chains, LLM calls, tools, and agents. Edges are parent-child execution flows.
 
 **Layers:** `Trace`, `Chain`, `LLM`, `Tool`, `Agent`, `Eval`
 **Edge types:** `calls`, `variant_of`
 
-Uses `maps/default-presentation.json` — no per-export presentation needed.
+Uses `maps/default-presentation.json` — no per-export presentation needed. Keep published examples synthetic unless the source data is intentionally public.
 
 ---
 
