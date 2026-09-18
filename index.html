@@ -428,7 +428,7 @@
         --panel:   #f5f7fc;
         --panel-2: #edf0f8;
         --border:  rgba(0,0,0,0.08);
-        --muted:   #6b7a99;
+        --muted:   #52617d;
         --text:    #1a2238;
       }
       html:not([data-theme]), html:not([data-theme]) body { background: var(--bg); }
@@ -442,7 +442,7 @@
       html:not([data-theme]) .node .bg { fill: rgba(255,255,255,0.97); stroke: rgba(0,0,0,0.1); }
       html:not([data-theme]) .node:hover .bg { stroke: rgba(0,0,0,0.2); }
       html:not([data-theme]) .node .n-name { fill: #1a2238; }
-      html:not([data-theme]) .node .n-meta { fill: #6b7a99; }
+      html:not([data-theme]) .node .n-meta { fill: #52617d; }
       html:not([data-theme]) .impact-table td { border-bottom-color: rgba(0,0,0,0.05); }
       html:not([data-theme]) .edge.path-dim { opacity: 0.1; }
       html:not([data-theme]) .edge.path-hit { stroke: #4f46e5 !important; filter: drop-shadow(0 0 4px rgba(79,70,229,0.35)); }
@@ -453,8 +453,8 @@
       html:not([data-theme]) .path-bar { background: rgba(79,70,229,0.06); border-color: rgba(79,70,229,0.15); }
       html:not([data-theme]) .path-bar .path-label { color: #4f46e5; }
       html:not([data-theme]) .path-bar .path-chip { background: rgba(79,70,229,0.08); border-color: rgba(79,70,229,0.2); }
-      html:not([data-theme]) .path-bar .path-chip.source { border-color: rgba(5,150,105,0.3); color: #059669; }
-      html:not([data-theme]) .path-bar .path-chip.target { border-color: rgba(217,119,6,0.3); color: #d97706; }
+      html:not([data-theme]) .path-bar .path-chip.source { border-color: rgba(5,150,105,0.3); color: #047857; }
+      html:not([data-theme]) .path-bar .path-chip.target { border-color: rgba(217,119,6,0.3); color: #92400e; }
       /* Light mode fixes — contrast and visibility */
       html:not([data-theme]) .eyebrow { background: rgba(79,70,229,0.08); color: #4338ca; }
       html:not([data-theme]) .chip { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); color: var(--text); }
@@ -477,7 +477,7 @@
       --panel:   #f5f7fc;
       --panel-2: #edf0f8;
       --border:  rgba(0,0,0,0.08);
-      --muted:   #6b7a99;
+      --muted:   #52617d;
       --text:    #1a2238;
     }
     html[data-theme='light'], html[data-theme='light'] body { background: var(--bg); }
@@ -491,7 +491,7 @@
     html[data-theme='light'] .node .bg { fill: rgba(255,255,255,0.97); stroke: rgba(0,0,0,0.1); }
     html[data-theme='light'] .node:hover .bg { stroke: rgba(0,0,0,0.2); }
     html[data-theme='light'] .node .n-name { fill: #1a2238; }
-    html[data-theme='light'] .node .n-meta { fill: #6b7a99; }
+    html[data-theme='light'] .node .n-meta { fill: #52617d; }
     html[data-theme='light'] .impact-table td { border-bottom-color: rgba(0,0,0,0.05); }
     html[data-theme='light'] .edge.path-dim { opacity: 0.1; }
     html[data-theme='light'] .edge.path-hit { stroke: #4f46e5 !important; filter: drop-shadow(0 0 4px rgba(79,70,229,0.35)); }
@@ -502,8 +502,8 @@
     html[data-theme='light'] .path-bar { background: rgba(79,70,229,0.06); border-color: rgba(79,70,229,0.15); }
     html[data-theme='light'] .path-bar .path-label { color: #4f46e5; }
     html[data-theme='light'] .path-bar .path-chip { background: rgba(79,70,229,0.08); border-color: rgba(79,70,229,0.2); }
-    html[data-theme='light'] .path-bar .path-chip.source { border-color: rgba(5,150,105,0.3); color: #059669; }
-    html[data-theme='light'] .path-bar .path-chip.target { border-color: rgba(217,119,6,0.3); color: #d97706; }
+    html[data-theme='light'] .path-bar .path-chip.source { border-color: rgba(5,150,105,0.3); color: #047857; }
+    html[data-theme='light'] .path-bar .path-chip.target { border-color: rgba(217,119,6,0.3); color: #92400e; }
     /* Light mode fixes — contrast and visibility */
     html[data-theme='light'] .eyebrow { background: rgba(79,70,229,0.08); color: #4338ca; }
     html[data-theme='light'] .chip { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); color: var(--text); }
@@ -990,6 +990,8 @@ function readStateFromUrl() {
     zk:    p.get('zk')    || null,
     zx:    p.get('zx')    || null,
     zy:    p.get('zy')    || null,
+    vw:    p.get('vw')    || null,
+    vh:    p.get('vh')    || null,
   };
 }
 
@@ -1020,8 +1022,14 @@ function writeStateToUrl() {
     if (svgEl) {
       const t = d3.zoomTransform(svgEl);
       if (t.k !== 1 || t.x !== 0 || t.y !== 0) {
-        sp.set('zk', t.k.toFixed(2)); sp.set('zx', t.x.toFixed(0)); sp.set('zy', t.y.toFixed(0));
-      } else { sp.delete('zk'); sp.delete('zx'); sp.delete('zy'); }
+        sp.set('zk', t.k.toFixed(2));
+        sp.set('zx', t.x.toFixed(0));
+        sp.set('zy', t.y.toFixed(0));
+        sp.set('vw', String(Math.max(1, mapWrap.clientWidth)));
+        sp.set('vh', String(Math.max(1, mapWrap.clientHeight)));
+      } else {
+        ['zk','zx','zy','vw','vh'].forEach(key => sp.delete(key));
+      }
     }
 
     history.replaceState(null, '', url);
@@ -1035,9 +1043,10 @@ function findShortestPath(fromId, toId) {
   const visited = new Set([fromId]);
   const parent = { [fromId]: null };
   const queue = [fromId];
+  let queueHead = 0;
 
-  while (queue.length) {
-    const current = queue.shift();
+  while (queueHead < queue.length) {
+    const current = queue[queueHead++];
     if (current === toId) {
       // Reconstruct path
       const path = [];
@@ -2491,10 +2500,16 @@ document.getElementById('nodeGroup').addEventListener('pointermove', () => clear
   const ok = await loadMapPack(initialMap);
   if (!ok) return;
 
-  // 5. Apply URL state overrides
+  // 5. Apply URL state overrides. Treat URL values as untrusted/stale input:
+  // only restore values that exist in the currently loaded map pack.
+  const validLayers = new Set(['All', ...nodes.map(node => node.layer).filter(Boolean)]);
+  const validFocusModes = new Set((presentation.focusModes || [{ id: 'All' }]).map(mode => mode.id));
   if (urlState.node && nodeMap[urlState.node]) { state.selectedId = urlState.node; userHasSelected = true; }
-  if (urlState.layer) { state.layer = urlState.layer; document.getElementById('layerF').value = urlState.layer; }
-  if (urlState.focus) state.focus = urlState.focus;
+  if (urlState.layer && validLayers.has(urlState.layer)) {
+    state.layer = urlState.layer;
+    document.getElementById('layerF').value = urlState.layer;
+  }
+  if (urlState.focus && validFocusModes.has(urlState.focus)) state.focus = urlState.focus;
   if (urlState.heat === '1') { state.heatmap = true; syncHeatButton(); }
   if (urlState.q) { state.search = urlState.q; document.getElementById('search').value = urlState.q; }
   if (isKnownTheme(urlState.theme)) applyTheme(urlState.theme);
@@ -2509,25 +2524,39 @@ document.getElementById('nodeGroup').addEventListener('pointermove', () => clear
   }
 
   layoutCache = null;
-  const hasZoomState = urlState.zk;
-  render(!hasZoomState); // skip fitToView if zoom state is in URL
 
-  // Restore zoom transform from URL
-  if (hasZoomState) {
-    const k = parseFloat(urlState.zk), zx = parseFloat(urlState.zx||0), zy = parseFloat(urlState.zy||0);
-    if (isFinite(k) && isFinite(zx) && isFinite(zy)) {
-      requestAnimationFrame(() => {
-        const svgEl = document.getElementById('map');
-        if (svgEl) d3.select(svgEl).call(zoom.transform, d3.zoomIdentity.translate(zx, zy).scale(k));
-      });
-    }
+  // Camera transforms are pixel-based. Older links stored raw x/y only, which
+  // made a desktop share open off-frame on smaller viewports. New links include
+  // the source viewport and normalize translation to the current canvas.
+  const sharedZoom = (() => {
+    const k = Number.parseFloat(urlState.zk);
+    const x = Number.parseFloat(urlState.zx);
+    const y = Number.parseFloat(urlState.zy);
+    const w = Number.parseFloat(urlState.vw);
+    const h = Number.parseFloat(urlState.vh);
+    if (![k,x,y,w,h].every(Number.isFinite) || w <= 0 || h <= 0 || k < MIN_ZOOM || k > MAX_ZOOM) return null;
+    return { k, x, y, w, h };
+  })();
+
+  render(!sharedZoom);
+
+  if (sharedZoom) {
+    requestAnimationFrame(() => {
+      const svgEl = document.getElementById('map');
+      if (!svgEl) return;
+      const widthRatio = mapWrap.clientWidth / sharedZoom.w;
+      const heightRatio = mapWrap.clientHeight / sharedZoom.h;
+      const tx = sharedZoom.x * widthRatio;
+      const ty = sharedZoom.y * heightRatio;
+      d3.select(svgEl).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(sharedZoom.k));
+    });
   }
 
-  // First-run coach overlay
+  // First-run coach overlay. localStorage can be blocked in privacy modes.
   const COACH_KEY = 'ge-onboarded-v1';
-  if (!localStorage.getItem(COACH_KEY)) {
-    showCoach();
-  }
+  let hasSeenCoach = false;
+  try { hasSeenCoach = localStorage.getItem(COACH_KEY) === '1'; } catch {}
+  if (!hasSeenCoach) showCoach();
 })();
 
 function showCoach() {
