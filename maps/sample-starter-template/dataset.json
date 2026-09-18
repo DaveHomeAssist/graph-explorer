@@ -5,7 +5,7 @@
     "name": "Sample: Starter Template",
     "version": "1.0",
     "description": "Blank-slate template showing the full node/edge schema. Fork this to create a new map — replace placeholder labels with your own topology.",
-    "author": "Digital Footprints LLC"
+    "author": "Graph Explorer Samples"
   },
   "nodes": [
     {
