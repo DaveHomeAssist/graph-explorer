@@ -340,7 +340,7 @@
         --panel:   #f5f7fc;
         --panel-2: #edf0f8;
         --border:  rgba(0,0,0,0.08);
-        --muted:   #6b7a99;
+        --muted:   #52617d;
         --text:    #1a2238;
       }
       html:not([data-theme]), html:not([data-theme]) body { background: var(--bg); }
@@ -354,7 +354,7 @@
       html:not([data-theme]) .node .bg { fill: rgba(255,255,255,0.97); stroke: rgba(0,0,0,0.1); }
       html:not([data-theme]) .node:hover .bg { stroke: rgba(0,0,0,0.2); }
       html:not([data-theme]) .node .n-name { fill: #1a2238; }
-      html:not([data-theme]) .node .n-meta { fill: #6b7a99; }
+      html:not([data-theme]) .node .n-meta { fill: #52617d; }
       html:not([data-theme]) .impact-table td { border-bottom-color: rgba(0,0,0,0.05); }
       html:not([data-theme]) .edge.path-dim { opacity: 0.1; }
       html:not([data-theme]) .edge.path-hit { stroke: #4f46e5 !important; filter: drop-shadow(0 0 4px rgba(79,70,229,0.35)); }
@@ -365,8 +365,8 @@
       html:not([data-theme]) .path-bar { background: rgba(79,70,229,0.06); border-color: rgba(79,70,229,0.15); }
       html:not([data-theme]) .path-bar .path-label { color: #4f46e5; }
       html:not([data-theme]) .path-bar .path-chip { background: rgba(79,70,229,0.08); border-color: rgba(79,70,229,0.2); }
-      html:not([data-theme]) .path-bar .path-chip.source { border-color: rgba(5,150,105,0.3); color: #059669; }
-      html:not([data-theme]) .path-bar .path-chip.target { border-color: rgba(217,119,6,0.3); color: #d97706; }
+      html:not([data-theme]) .path-bar .path-chip.source { border-color: rgba(5,150,105,0.3); color: #047857; }
+      html:not([data-theme]) .path-bar .path-chip.target { border-color: rgba(217,119,6,0.3); color: #92400e; }
       /* Light mode fixes — contrast and visibility */
       html:not([data-theme]) .eyebrow { background: rgba(79,70,229,0.08); color: #4338ca; }
       html:not([data-theme]) .chip { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); color: var(--text); }
@@ -389,7 +389,7 @@
       --panel:   #f5f7fc;
       --panel-2: #edf0f8;
       --border:  rgba(0,0,0,0.08);
-      --muted:   #6b7a99;
+      --muted:   #52617d;
       --text:    #1a2238;
     }
     html[data-theme='light'], html[data-theme='light'] body { background: var(--bg); }
@@ -403,7 +403,7 @@
     html[data-theme='light'] .node .bg { fill: rgba(255,255,255,0.97); stroke: rgba(0,0,0,0.1); }
     html[data-theme='light'] .node:hover .bg { stroke: rgba(0,0,0,0.2); }
     html[data-theme='light'] .node .n-name { fill: #1a2238; }
-    html[data-theme='light'] .node .n-meta { fill: #6b7a99; }
+    html[data-theme='light'] .node .n-meta { fill: #52617d; }
     html[data-theme='light'] .impact-table td { border-bottom-color: rgba(0,0,0,0.05); }
     html[data-theme='light'] .edge.path-dim { opacity: 0.1; }
     html[data-theme='light'] .edge.path-hit { stroke: #4f46e5 !important; filter: drop-shadow(0 0 4px rgba(79,70,229,0.35)); }
@@ -414,8 +414,8 @@
     html[data-theme='light'] .path-bar { background: rgba(79,70,229,0.06); border-color: rgba(79,70,229,0.15); }
     html[data-theme='light'] .path-bar .path-label { color: #4f46e5; }
     html[data-theme='light'] .path-bar .path-chip { background: rgba(79,70,229,0.08); border-color: rgba(79,70,229,0.2); }
-    html[data-theme='light'] .path-bar .path-chip.source { border-color: rgba(5,150,105,0.3); color: #059669; }
-    html[data-theme='light'] .path-bar .path-chip.target { border-color: rgba(217,119,6,0.3); color: #d97706; }
+    html[data-theme='light'] .path-bar .path-chip.source { border-color: rgba(5,150,105,0.3); color: #047857; }
+    html[data-theme='light'] .path-bar .path-chip.target { border-color: rgba(217,119,6,0.3); color: #92400e; }
     /* Light mode fixes — contrast and visibility */
     html[data-theme='light'] .eyebrow { background: rgba(79,70,229,0.08); color: #4338ca; }
     html[data-theme='light'] .chip { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); color: var(--text); }
@@ -753,10 +753,12 @@ function findShortestPath(fromId, toId) {
   if (!fromId || !toId || fromId === toId) return [fromId].filter(Boolean);
   const visited = new Set([fromId]);
   const parent = { [fromId]: null };
+  if (!nodeMap[fromId] || !nodeMap[toId]) return [];
   const queue = [fromId];
+  let queueHead = 0;
 
-  while (queue.length) {
-    const current = queue.shift();
+  while (queueHead < queue.length) {
+    const current = queue[queueHead++];
     if (current === toId) {
       // Reconstruct path
       const path = [];
@@ -1143,7 +1145,12 @@ function getInitialTheme() {
   return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 }
 
+function isKnownTheme(theme) {
+  return theme === 'light' || theme === 'dark';
+}
+
 function applyTheme(theme) {
+  if (!isKnownTheme(theme)) return;
   document.documentElement.setAttribute('data-theme', theme);
   const btn = document.getElementById('themeBtn');
   if (btn) btn.textContent = theme === 'light' ? '☀ Light' : '🌙 Dark';
@@ -1842,13 +1849,18 @@ document.getElementById('nodeGroup').onclick = handleNodeClick;
   const ok = await loadMapPack(fixedEntry);
   if (!ok) return;
 
-  // Apply URL state overrides
+  // Apply URL state overrides only when they exist in this sample pack.
+  const validLayers = new Set(['All', ...nodes.map(node => node.layer).filter(Boolean)]);
+  const validFocusModes = new Set((presentation.focusModes || [{ id: 'All' }]).map(mode => mode.id));
   if (urlState.node && nodeMap[urlState.node]) state.selectedId = urlState.node;
-  if (urlState.layer) { state.layer = urlState.layer; document.getElementById('layerF').value = urlState.layer; }
-  if (urlState.focus) state.focus = urlState.focus;
+  if (urlState.layer && validLayers.has(urlState.layer)) {
+    state.layer = urlState.layer;
+    document.getElementById('layerF').value = urlState.layer;
+  }
+  if (urlState.focus && validFocusModes.has(urlState.focus)) state.focus = urlState.focus;
   if (urlState.heat === '1') { state.heatmap = true; document.getElementById('heatBtn').textContent = '🌡 Heatmap ON'; }
   if (urlState.q) { state.search = urlState.q; document.getElementById('search').value = urlState.q; }
-  if (urlState.theme) applyTheme(urlState.theme);
+  if (isKnownTheme(urlState.theme)) applyTheme(urlState.theme);
   if (urlState.path) {
     const [src, tgt] = urlState.path.split(',');
     if (src && tgt && nodeMap[src] && nodeMap[tgt]) {
