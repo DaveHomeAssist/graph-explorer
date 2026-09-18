@@ -234,9 +234,14 @@
 
     .node {
       cursor: pointer;
-      transition: filter 180ms ease-out, opacity 180ms ease-out, transform 180ms ease-out;
+      transition: filter 180ms ease-out, opacity 180ms ease-out;
     }
-    .node:hover { filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)) drop-shadow(0 0 8px rgba(129,140,248,0.25)); transform: translateY(-3px) scale(1.02); }
+    /* Never put a CSS transform on .node: the node's POSITION lives in its SVG
+       transform attribute, and the CSS transform property replaces it outright.
+       On hover the node jumped to the origin, lost :hover, snapped back, and
+       re-entered hover — shaking until the pointer left. Hover feedback is the
+       drop-shadow and the .bg stroke, which cannot move anything. */
+    .node:hover { filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)) drop-shadow(0 0 8px rgba(129,140,248,0.25)); }
     .node .bg {
       fill: rgba(12,19,33,0.96); stroke: rgba(255,255,255,0.09); stroke-width: 1;
       rx: 13; transition: stroke 180ms, filter 180ms, stroke-width 180ms;
@@ -1875,11 +1880,6 @@ function renderMap(visIds) {
       ${state.heatmap ? `<text class="n-degree" x="${NW-12}" y="16" text-anchor="end" fill="${esc(heatCol)}">${deg}↔</text>` : ''}
       ${risks.length ? `<text class="n-degree" x="${NW-12}" y="${state.heatmap ? 30 : 16}" text-anchor="end" fill="#f59e0b">!${risks.length}</text>` : ''}
     `;
-    if (vis) {
-      const baseY = py;
-      g.addEventListener('mouseenter', () => { g.setAttribute('transform', `translate(${px},${baseY - 4})`); });
-      g.addEventListener('mouseleave', () => { g.setAttribute('transform', `translate(${px},${baseY})`); });
-    }
     nodeGrp.appendChild(g);
   });
 

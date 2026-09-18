@@ -33,6 +33,14 @@ jobs:
           ! grep -q 'cdnjs.cloudflare.com/ajax/libs/dagre' issues.html
           ! grep -q '"id": "notion-workspace"' maps/manifest.json
 
+          # A CSS transform on .node replaces the SVG transform attribute that
+          # carries the node's position, so hovering shook the node until the
+          # pointer left. Positioning and hover feedback must never share a
+          # property. See the 2026-09-18 fix.
+          ! grep -nE '\.node:hover[^}]*transform:' index.html
+          ! grep -nE '\.node:hover[^}]*transform:' issues.html
+          ! grep -nE '^\s*\.node \{[^}]*' -A3 index.html | grep -q 'transition:.*transform'
+
       - name: Start static server
         shell: bash
         run: |

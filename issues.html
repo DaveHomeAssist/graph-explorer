@@ -1459,11 +1459,6 @@ function renderMap(visIds) {
       ${state.heatmap ? `<text class="n-degree" x="${NW-12}" y="16" text-anchor="end" fill="${heatCol}">${deg}↔</text>` : ''}
       ${risks.length ? `<text class="n-degree" x="${NW-12}" y="${state.heatmap ? 30 : 16}" text-anchor="end" fill="#f59e0b">!${risks.length}</text>` : ''}
     `;
-    if (vis) {
-      const baseY = py;
-      g.addEventListener('mouseenter', () => { g.setAttribute('transform', `translate(${px},${baseY - 4})`); });
-      g.addEventListener('mouseleave', () => { g.setAttribute('transform', `translate(${px},${baseY})`); });
-    }
     nodeGrp.appendChild(g);
   });
 
