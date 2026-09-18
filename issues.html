@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ecosystem Issue Tracker</title>
+  <title>Graph Explorer — Sample Issue Tracker</title>
   <link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -1814,7 +1814,7 @@ document.addEventListener('keydown', (event) => {
 document.getElementById('nodeGroup').addEventListener('keydown', handleNodeKeydown);
 document.getElementById('nodeGroup').onclick = handleNodeClick;
 
-// ── Boot (standalone — loads ecosystem-issues directly, no manifest) ─────────
+// ── Boot (standalone — loads synthetic sample issue data directly) ───────────
 (async function boot() {
   // A blocked or offline CDN used to leave the page on "Loading…" forever with
   // no message, because the module died on the first d3 reference.
@@ -1832,11 +1832,11 @@ document.getElementById('nodeGroup').onclick = handleNodeClick;
   loadPathHistory();
   updateUndoButtons();
 
-  // Load ecosystem-issues map pack directly (skip manifest)
+  // Load synthetic sample issue pack directly (skip manifest)
   const fixedEntry = {
     id: 'ecosystem-issues',
-    title: 'Ecosystem Issue Tracker',
-    description: 'Cross-project health map — 18 projects, open P1/P2 issues, and shared issue patterns'
+    title: 'Sample Issue Tracker',
+    description: 'Synthetic projects, issues, and shared patterns — no production or personal data'
   };
 
   const ok = await loadMapPack(fixedEntry);
