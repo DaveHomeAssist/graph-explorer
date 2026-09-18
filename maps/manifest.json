@@ -2,55 +2,51 @@
   "version": 1,
   "maps": [
     {
-      "id": "notion-workspace",
-      "title": "Notion Workspace",
-      "description": "Workspace structure, databases, and project hubs"
-    },
-    {
-      "id": "software-architecture",
-      "title": "Software Architecture",
-      "description": "Services, infra, AI providers, and dependencies"
-    },
-    {
-      "id": "ai-system",
-      "title": "AI System Pipeline",
-      "description": "Prompt routing, evaluation, and response pipeline"
-    },
-    {
-      "id": "garden-os",
-      "title": "Garden OS Topology",
-      "description": "Browser-native horticultural reasoning engine architecture"
-    },
-    {
-      "id": "trace_t_sample__variant_main__2026-03-17T02-00-01-000Z",
-      "name": "Run Tree: Sample PromptLab Trace",
-      "description": "Sample exported PromptLab run tree using the shared default presentation.",
-      "file": "datasets/trace_t_sample__variant_main__2026-03-17T02-00-01-000Z/dataset.json",
-      "tags": ["run-tree", "promptlab"]
-    },
-    {
       "id": "sample-client-ops",
       "title": "Sample: Client Operations",
-      "description": "Client-services org — revenue, delivery, support hubs with governance and data flows",
-      "tags": ["sample", "operations"]
+      "description": "Synthetic client-services topology with revenue, delivery, support, governance, and data flows",
+      "tags": [
+        "sample",
+        "operations"
+      ]
     },
     {
       "id": "sample-starter-template",
       "title": "Sample: Starter Template",
-      "description": "Blank-slate template with all node/edge types pre-wired — fork to create your own map",
-      "tags": ["sample", "template"]
+      "description": "Blank-slate template with node and edge types pre-wired for authoring a new map",
+      "tags": [
+        "sample",
+        "template"
+      ]
     },
     {
       "id": "sample-devops-pipeline",
       "title": "Sample: DevOps Pipeline",
-      "description": "CI/CD pipeline topology with build, test, deploy, and monitoring stages",
-      "tags": ["sample", "devops"]
+      "description": "Synthetic CI/CD pipeline topology with build, test, deploy, and monitoring stages",
+      "tags": [
+        "sample",
+        "devops"
+      ]
     },
     {
       "id": "sample-org-chart",
       "title": "Sample: Organization Chart",
-      "description": "Flat org structure with departments, teams, and cross functional links",
-      "tags": ["sample", "org"]
+      "description": "Synthetic organization structure with departments, teams, and cross-functional links",
+      "tags": [
+        "sample",
+        "org"
+      ]
+    },
+    {
+      "id": "trace_t_sample__variant_main__2026-03-17T02-00-01-000Z",
+      "name": "Run Tree: Sample AI Workflow",
+      "description": "Synthetic AI workflow run tree using the shared default presentation.",
+      "file": "datasets/trace_t_sample__variant_main__2026-03-17T02-00-01-000Z/dataset.json",
+      "tags": [
+        "sample",
+        "run-tree",
+        "ai-workflow"
+      ]
     }
   ]
 }
