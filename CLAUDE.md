@@ -9,7 +9,7 @@ Static, zero-dependency graph topology visualization and inspection tool. Render
 ## Stack
 
 - Single-file HTML application (`index.html`)
-- D3.js and Dagre via pinned CDN (no npm, no build step)
+- D3.js 7.8.5 and Dagre 0.8.5 vendored under `assets/vendor/` (no npm, no build step)
 - Browser-local persistence in four localStorage keys (see Persistence below)
 - GitHub Pages deployment from `main`
 
@@ -24,7 +24,7 @@ Static, zero-dependency graph topology visualization and inspection tool. Render
 ## Architecture
 
 - Zero backend — no server, no database, no API calls
-- No npm, no build step, no external JS/CSS dependencies beyond D3.js and Dagre (pinned CDN)
+- No npm and no build step; D3.js and Dagre are pinned local vendor assets, with no third-party runtime JS dependency
 - Single-file HTML application (`index.html` embeds all CSS and JS)
 - Dataset-presentation separation — topology data and visual styling are decoupled JSON files
 - All map packs validated against `engine/validate.js` before load
@@ -78,7 +78,7 @@ button copies.
 
 - Do not add a backend, database, or server requirement
 - Do not introduce npm, package.json, or any build tooling
-- Do not add external JS/CSS dependencies beyond the pinned D3/Dagre CDN links
+- Do not add runtime CDN dependencies for core graph rendering; keep versioned browser libraries vendored under `assets/vendor/`
 - Do not modify `engine/validate.js` without updating all map packs that rely on the contract
 - Do not add a map pack without registering it in `maps/manifest.json`
 - Do not remove the fallback presentation pattern — PromptLab exports depend on `default-presentation.json`
@@ -116,6 +116,14 @@ button copies.
 | GE-14 | P2 | fixed | Export anchor never appended, URL revoked too early, PNG background hardcoded | Appended, deferred revoke, live background, error paths |
 | GE-15 | P2 | fixed | Blocked CDN left the page on "Loading…" forever | `boot()` names the missing library |
 | GE-16 | P2 | fixed | Edge-legend SVGs surfaced as anonymous images | `aria-hidden` |
+| GE-17 | P1 | fixed | Public graph packs exposed private workspace/project topology | Public manifest sample-only; private packs removed from current branch; standalone issue map synthetic |
+| GE-18 | P1 | fixed | URL/bookmark state accepted stale layer/focus/path values | Validate against active pack and reject stale path state |
+| GE-19 | P1 | fixed | Shared raw D3 camera transform was viewport-dependent | Share viewport dimensions and normalize camera translation; legacy links refit |
+| GE-20 | P1 | fixed | No automated browser regression gate | GitHub Actions headless Chrome smoke gate covers both viewers, warnings, local libs, and private-path absence |
+| GE-21 | P2 | fixed | Validation warnings were count-only | Warning badge is an accessible disclosure with escaped warning details |
+| GE-22 | P1 | fixed | D3/Dagre CDN outage disabled rendering | D3 7.8.5 and Dagre 0.8.5 vendored locally |
+| GE-23 | P2 | fixed | Neighbor focus resurrected nodes hidden by active filters | Neighbor focus now intersects current filtered result |
+| GE-24 | P2 | fixed | Light theme helper/path text missed AA contrast | Light semantic text tokens darkened and smoke-tested |
 
 ## Session Log
 
