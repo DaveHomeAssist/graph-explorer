@@ -2,7 +2,7 @@
 
 A static, zero-dependency node graph viewer — load any JSON "map pack" and explore it as an interactive topology: filter by layer, trace paths between nodes, and inspect details in a side panel. Live at **[davehomeassist.github.io/graph-explorer](https://davehomeassist.github.io/graph-explorer/)**.
 
-One viewer, many interchangeable datasets. There's no backend and no build step — everything runs in the browser, rendered with [D3.js](https://d3js.org/) and [Dagre](https://github.com/dagrejs/dagre) via pinned CDN links. Your map bookmarks, recent paths, theme and onboarding state persist in four `localStorage` keys, documented in [CLAUDE.md](CLAUDE.md#persistence); nothing leaves the device.
+One viewer, many interchangeable datasets. There's no backend and no build step — everything runs in the browser, rendered with locally vendored, version-pinned [D3.js](https://d3js.org/) 7.8.5 and [Dagre](https://github.com/dagrejs/dagre) 0.8.5 bundles. Your map bookmarks, recent paths, theme and onboarding state persist in four `localStorage` keys, documented in [CLAUDE.md](CLAUDE.md#persistence); nothing leaves the device.
 
 ## What's here
 
@@ -36,4 +36,4 @@ See **[docs/how-to-build-a-map-pack.md](docs/how-to-build-a-map-pack.md)** for t
 
 - Dataset (topology) and presentation (visual styling) are always separate JSON files — never mix graph data with color/layout config.
 - Every map pack must validate against `engine/validate.js` (errors block load, warnings allow it) and must be registered in `maps/manifest.json` to appear in the UI.
-- No npm, no build tooling, no external dependencies beyond the pinned D3/Dagre CDN scripts — this project is intentionally static.
+- No npm and no build tooling. D3 7.8.5 and Dagre 0.8.5 are vendored under `assets/vendor/`, so graph rendering has no third-party runtime network dependency.
