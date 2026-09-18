@@ -2,18 +2,18 @@
   "version": 1,
   "meta": {
     "id": "trace_t_sample__variant_main__2026-03-17T02-00-01-000Z",
-    "name": "Trace t_sample (main)",
-    "description": "Run tree snapshot exported from PromptLab Dexie",
+    "name": "Sample AI Workflow Trace",
+    "description": "Synthetic run tree used to demonstrate Graph Explorer workflow visualization.",
     "traceId": "t_sample",
     "rootRunId": "r_root",
     "variantId": "main",
     "exportedAt": "2026-03-17T02:00:01.000Z",
-    "source": "promptlab:dexie:runs"
+    "source": "synthetic:run-tree"
   },
   "nodes": [
     {
       "id": "r_root",
-      "label": "Trace:User request",
+      "label": "Trace:Sample request",
       "type": "trace",
       "layer": "Trace",
       "status": "success",
@@ -23,9 +23,12 @@
         "variantId": "main",
         "runtimeMs": 1000,
         "runtime": "1.0s",
-        "tags": ["promptlab", "router-v1"],
+        "tags": [
+          "sample",
+          "router"
+        ],
         "desc": "success. 2 child runs.",
-        "owner": "promptlab",
+        "owner": "workflow-demo",
         "tokens": 48,
         "cost": 0,
         "promptHash": "hash-root"
@@ -33,7 +36,7 @@
     },
     {
       "id": "r_llm",
-      "label": "LLM:Claude call",
+      "label": "LLM:Model A call",
       "type": "llm",
       "layer": "LLM",
       "status": "success",
@@ -43,9 +46,12 @@
         "variantId": "main",
         "runtimeMs": 420,
         "runtime": "420ms",
-        "tags": ["anthropic", "claude-3.7"],
+        "tags": [
+          "provider-a",
+          "model-a"
+        ],
         "desc": "success. 0 child runs.",
-        "owner": "anthropic",
+        "owner": "provider-a",
         "tokens": 132,
         "cost": 0.014,
         "promptHash": "hash-llm"
@@ -53,7 +59,7 @@
     },
     {
       "id": "r_tool",
-      "label": "Tool:PII scan",
+      "label": "Tool:Policy scan",
       "type": "tool",
       "layer": "Tool",
       "status": "error",
@@ -63,7 +69,10 @@
         "variantId": "main",
         "runtimeMs": 260,
         "runtime": "260ms",
-        "tags": ["scanner", "pii"],
+        "tags": [
+          "scanner",
+          "policy"
+        ],
         "desc": "error. 0 child runs.",
         "owner": "scanner",
         "tokens": null,
@@ -83,9 +92,12 @@
         "variantId": "alt-a",
         "runtimeMs": null,
         "runtime": null,
-        "tags": ["openai", "gpt-4.1"],
+        "tags": [
+          "provider-b",
+          "model-b"
+        ],
         "desc": "running. 0 child runs.",
-        "owner": "openai",
+        "owner": "provider-b",
         "tokens": null,
         "cost": null,
         "promptHash": "hash-retry"
@@ -93,9 +105,37 @@
     }
   ],
   "edges": [
-    { "from": "r_root", "to": "r_llm", "type": "calls", "meta": { "label": "calls" } },
-    { "from": "r_root", "to": "r_tool", "type": "calls", "meta": { "label": "calls" } },
-    { "from": "r_root", "to": "r_variant", "type": "calls", "meta": { "label": "calls" } },
-    { "from": "r_llm", "to": "r_variant", "type": "variant_of", "meta": { "label": "fork" } }
+    {
+      "from": "r_root",
+      "to": "r_llm",
+      "type": "calls",
+      "meta": {
+        "label": "calls"
+      }
+    },
+    {
+      "from": "r_root",
+      "to": "r_tool",
+      "type": "calls",
+      "meta": {
+        "label": "calls"
+      }
+    },
+    {
+      "from": "r_root",
+      "to": "r_variant",
+      "type": "calls",
+      "meta": {
+        "label": "calls"
+      }
+    },
+    {
+      "from": "r_llm",
+      "to": "r_variant",
+      "type": "variant_of",
+      "meta": {
+        "label": "fork"
+      }
+    }
   ]
 }
