@@ -58,21 +58,24 @@ served locally, on both pages.
 
 ## Known gaps
 
-These are real and unfixed. None is a regression.
+These remain open after the September 17 repair and privacy passes.
 
-1. **`issues.html` has no cluster mode.** Its pack measures 6600×324 units and
-   fits at `k=0.165`, where node cards are too small to read. `index.html`
-   switches to cluster badges below `0.6` for exactly this case; `issues.html`
-   has none of that code. Verified it never engages there at any zoom.
-2. **The floating toolbar overlaps the detail drawer.** It sits at its authored
-   `bottom:14px; right:14px`, and the drawer overlays the right 290px of the
-   canvas, so the strip clips some drawer text. This is the original layout,
-   only visible now that the toolbar survives.
-3. **BFS uses `queue.shift()`**, which is O(n) per step. Irrelevant at current
-   pack sizes; it would matter on a pack an order of magnitude larger.
-4. **Warnings are still count-only.** The badge reports how many; there is no
-   click-to-inspect.
-5. **No structured data (JSON-LD).** Carried over from the 2026-03-25 list.
+1. **Warnings are still count-only.** The quality badge reports how many validation warnings exist, but there is no click-to-inspect detail surface.
+2. **No structured data (JSON-LD).** Meta tags and Open Graph are present, but the public page has no structured-data block.
+3. **No automated browser regression gate.** The repository still relies on manual/headless verification outside CI, so main can publish without exercising the critical boot, fit, theme, filter, and share paths.
+4. **CDN dependencies remain a runtime availability dependency.** D3 and Dagre failure now produces a useful error, but the viewer cannot render while those CDN assets are unavailable.
+
+### Fixed since this document was first written
+
+- Floating toolbar now clears the detail drawer on desktop and mobile.
+- BFS uses a queue cursor instead of `queue.shift()`.
+- Share-camera state includes viewport dimensions and normalizes translation across differently sized canvases; legacy raw-camera links fall back to fit-to-view.
+- URL and bookmark layer/focus values are validated against the active pack.
+- Neighbor focus intersects active filters instead of resurrecting hidden nodes.
+- Bookmark path mode is rejected when its saved endpoints no longer exist.
+- First-run onboarding tolerates blocked `localStorage`.
+- Light-theme muted/path text now clears normal-text AA contrast on the authored light surfaces.
+- The public manifest is sample-only; real workspace/project graph packs were removed from the current public branch and the standalone issue map was replaced with synthetic data.
 
 ## How to re-verify
 
