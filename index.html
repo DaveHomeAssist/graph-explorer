@@ -925,7 +925,7 @@ function restoreMapBookmark(mapId) {
     selectedId: nodeMap[entry.selectedId] ? entry.selectedId : (nodes[0]?.id || null),
     focusNode: nodeMap[entry.focusNode] ? entry.focusNode : null,
     heatmap: !!entry.heatmap,
-    pathMode: !!entry.pathMode,
+    pathMode: !!entry.pathMode && !!nodeMap[entry.selectedId] && !!nodeMap[entry.pathTarget],
     pathTarget: nodeMap[entry.pathTarget] ? entry.pathTarget : null,
   });
   userHasSelected = !!nodeMap[entry.selectedId];
