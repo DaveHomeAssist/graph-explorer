@@ -916,10 +916,12 @@ function restoreMapBookmark(mapId) {
   const bookmarks = readMapBookmarks();
   const entry = bookmarks[mapId];
   if (!entry) return false;
+  const validLayers = new Set(['All', ...nodes.map(node => node.layer).filter(Boolean)]);
+  const validFocusModes = new Set((presentation.focusModes || [{ id: 'All' }]).map(mode => mode.id));
   Object.assign(state, {
-    search: entry.search || '',
-    layer: entry.layer || 'All',
-    focus: entry.focus || 'All',
+    search: typeof entry.search === 'string' ? entry.search : '',
+    layer: validLayers.has(entry.layer) ? entry.layer : 'All',
+    focus: validFocusModes.has(entry.focus) ? entry.focus : 'All',
     selectedId: nodeMap[entry.selectedId] ? entry.selectedId : (nodes[0]?.id || null),
     focusNode: nodeMap[entry.focusNode] ? entry.focusNode : null,
     heatmap: !!entry.heatmap,
@@ -1679,7 +1681,9 @@ function getVisibleIds() {
   if (state.focusNode) {
     const nbrs = adjacency[state.focusNode] || new Set();
     const focusIds = new Set([state.focusNode, ...nbrs]);
-    base = nodes.filter(n => focusIds.has(n.id));
+    // Neighbor focus narrows the already-filtered result. Rebuilding from all
+    // nodes here used to resurrect nodes hidden by search/layer/focus mode.
+    base = base.filter(n => focusIds.has(n.id));
   }
 
   return new Set(base.map(n => n.id));
