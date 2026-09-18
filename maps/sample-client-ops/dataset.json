@@ -5,7 +5,7 @@
     "name": "Sample: Client Operations Topology",
     "version": "1.0",
     "description": "Sample dataset showing a client-services org — revenue, delivery, support hubs with governance and operational data flows.",
-    "author": "Digital Footprints LLC"
+    "author": "Graph Explorer Samples"
   },
   "nodes": [
     {
