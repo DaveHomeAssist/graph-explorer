@@ -1,0 +1,125 @@
+name: Browser Smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify public graph sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'assets/vendor/d3-7.8.5.min.js' index.html
+          grep -q 'assets/vendor/dagre-0.8.5.min.js' index.html
+          grep -q 'assets/vendor/d3-7.8.5.min.js' issues.html
+          grep -q 'assets/vendor/dagre-0.8.5.min.js' issues.html
+          test -s assets/vendor/d3-7.8.5.min.js
+          test -s assets/vendor/dagre-0.8.5.min.js
+          ! grep -q 'cdnjs.cloudflare.com/ajax/libs/d3' index.html
+          ! grep -q 'cdnjs.cloudflare.com/ajax/libs/dagre' index.html
+          ! grep -q 'cdnjs.cloudflare.com/ajax/libs/d3' issues.html
+          ! grep -q 'cdnjs.cloudflare.com/ajax/libs/dagre' issues.html
+          ! grep -q '"id": "notion-workspace"' maps/manifest.json
+
+      - name: Start static server
+        shell: bash
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/graph-explorer-http.log 2>&1 &
+          echo $! >/tmp/graph-explorer-http.pid
+          for _ in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 0.2
+          done
+          cat /tmp/graph-explorer-http.log
+          exit 1
+
+      - name: Resolve Chrome
+        id: chrome
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          test -n "$CHROME"
+          echo "bin=$CHROME" >> "$GITHUB_OUTPUT"
+          "$CHROME" --version
+
+      - name: Smoke main viewer
+        shell: bash
+        env:
+          CHROME: ${{ steps.chrome.outputs.bin }}
+        run: |
+          set -euo pipefail
+          "$CHROME"             --headless=new             --no-sandbox             --disable-dev-shm-usage             --disable-gpu             --virtual-time-budget=5000             --dump-dom             'http://127.0.0.1:4173/?map=sample-client-ops&theme=light'             > /tmp/index-dom.html
+
+          grep -q 'Sample: Client Operations' /tmp/index-dom.html
+          grep -q 'class="node' /tmp/index-dom.html
+          grep -q 'schema v1' /tmp/index-dom.html
+          ! grep -q 'Required libraries failed to load' /tmp/index-dom.html
+          ! grep -q 'Loading graph dataset' /tmp/index-dom.html
+
+      - name: Smoke standalone issue viewer
+        shell: bash
+        env:
+          CHROME: ${{ steps.chrome.outputs.bin }}
+        run: |
+          set -euo pipefail
+          "$CHROME"             --headless=new             --no-sandbox             --disable-dev-shm-usage             --disable-gpu             --virtual-time-budget=5000             --dump-dom             'http://127.0.0.1:4173/issues.html?theme=light'             > /tmp/issues-dom.html
+
+          grep -q 'Sample: Issue Tracker' /tmp/issues-dom.html
+          grep -q 'class="node' /tmp/issues-dom.html
+          grep -q 'schema v1' /tmp/issues-dom.html
+          ! grep -q 'Required libraries failed to load' /tmp/issues-dom.html
+          ! grep -q 'Loading graph dataset' /tmp/issues-dom.html
+
+      - name: Smoke validation warning surface
+        shell: bash
+        env:
+          CHROME: ${{ steps.chrome.outputs.bin }}
+        run: |
+          set -euo pipefail
+
+          python3 - <<'PY'
+          import json
+          path = "maps/sample-client-ops/dataset.json"
+          with open(path, encoding="utf-8") as f:
+              data = json.load(f)
+          data["nodes"].append({
+              "id": "ci-orphan-warning",
+              "label": "CI Orphan Warning",
+              "type": "Synthetic Test",
+              "layer": "Page",
+              "status": "Active",
+              "meta": {"desc": "Temporary CI-only node used to exercise validation warnings."}
+          })
+          with open(path, "w", encoding="utf-8") as f:
+              json.dump(data, f)
+          PY
+
+          "$CHROME"             --headless=new             --no-sandbox             --disable-dev-shm-usage             --disable-gpu             --virtual-time-budget=5000             --dump-dom             'http://127.0.0.1:4173/?map=sample-client-ops&ci=warning'             > /tmp/warning-dom.html
+
+          grep -q 'id="warningBadge"' /tmp/warning-dom.html
+          grep -q 'aria-controls="qualityWarningList"' /tmp/warning-dom.html
+          grep -q 'Validation warnings' /tmp/warning-dom.html
+          grep -q 'ci-orphan-warning' /tmp/warning-dom.html
+
+      - name: Verify private graph paths stay absent
+        shell: bash
+        run: |
+          set -euo pipefail
+          for path in             maps/notion-workspace/dataset.json             maps/software-architecture/dataset.json             maps/ai-system/dataset.json             maps/garden-os/dataset.json
+          do
+            code="$(curl -sS -o /dev/null -w '%{http_code}' "http://127.0.0.1:4173/$path")"
+            test "$code" = "404"
+          done
