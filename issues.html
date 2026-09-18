@@ -7,8 +7,8 @@
   <link rel="icon" type="image/svg+xml" href="assets/icons/favicon/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js" integrity="sha384-su5kReKyYlIFrI62mbQRKXHzFobMa7BHp1cK6julLPbnYcCW9NIZKJiTODjLPeDh" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
+  <script defer src="assets/vendor/d3-7.8.5.min.js"></script>
+  <script defer src="assets/vendor/dagre-0.8.5.min.js"></script>
   <style>
     :root {
       --bg:      #070b12;
@@ -299,6 +299,21 @@
       border-color: rgba(245,158,11,0.22);
       color: #fbbf24;
     }
+    button.quality-badge { cursor: pointer; appearance: none; }
+    button.quality-badge:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+    .quality-warning-list {
+      max-width: min(520px, 90vw);
+      padding: 8px 10px;
+      border: 1px solid rgba(245,158,11,0.22);
+      border-radius: var(--radius-sm);
+      background: var(--panel-2);
+      color: var(--text);
+      font: 11px/1.45 'DM Mono', monospace;
+      text-align: left;
+    }
+    .quality-warning-list[hidden] { display: none; }
+    .quality-warning-list ul { margin: 4px 0 0 18px; padding: 0; }
+    .quality-warning-list li + li { margin-top: 4px; }
     .warning-note {
       background: rgba(245,158,11,0.08);
       border: 1px solid rgba(245,158,11,0.18);
@@ -495,6 +510,7 @@
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
           <div class="legend" id="dataQuality"></div>
+          <div class="quality-warning-list" id="qualityWarningList" hidden aria-live="polite"></div>
           <div class="legend" id="legend"></div>
           <div class="legend" id="edgeLegend"></div>
         </div>
@@ -1092,16 +1108,30 @@ function setupEdgeLegend() {
 
 function renderDataQuality() {
   const quality = document.getElementById('dataQuality');
-  if (!quality) return;
+  const panel = document.getElementById('qualityWarningList');
+  if (!quality || !panel) return;
   const badges = [
     `<span class="quality-badge">schema v1</span>`,
     `<span class="quality-badge">${nodes.length} nodes</span>`,
     `<span class="quality-badge">${edges.length} edges</span>`,
   ];
   if (validationWarnings.length) {
-    badges.push(`<span class="quality-badge warn">warnings ${validationWarnings.length}</span>`);
+    badges.push(`<button type="button" class="quality-badge warn" id="warningBadge" aria-expanded="false" aria-controls="qualityWarningList">warnings ${validationWarnings.length}</button>`);
+    panel.innerHTML = `<strong>Validation warnings</strong><ul>${validationWarnings.map(w => `<li>${esc(w)}</li>`).join('')}</ul>`;
+  } else {
+    panel.innerHTML = '';
+    panel.hidden = true;
   }
   quality.innerHTML = badges.join('');
+  const warningBadge = document.getElementById('warningBadge');
+  if (warningBadge) {
+    warningBadge.addEventListener('click', () => {
+      const willOpen = panel.hidden;
+      panel.hidden = !willOpen;
+      warningBadge.setAttribute('aria-expanded', String(willOpen));
+      if (willOpen) announce(`${validationWarnings.length} validation warning${validationWarnings.length === 1 ? '' : 's'} shown`);
+    });
+  }
 }
 
 function setupMarkers() {
