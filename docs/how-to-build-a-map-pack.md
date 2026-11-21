@@ -185,7 +185,7 @@ The presentation controls how your dataset looks and feels — colors, inspector
 | `title` | Hero heading in the UI. |
 | `eyebrow` | Small label above the title. |
 | `description` | Paragraph below the title. |
-| `defaults` | `showHeatmap`, `initialFocusMode`, `initialLayer` — initial UI state. |
+| `defaults` | `showHeatmap`, `initialFocusMode`, `initialLayer` — initial UI state. `rankdir` (`TB`, `BT`, `LR` or `RL`, default `TB`) sets the layout direction; use `LR` for left-to-right flows such as signal chains. |
 | `layers` | Object mapping layer names → hex colors. Every `layer` value in your dataset should have a color here. |
 | `statusStyles` | Object mapping status values → hex colors. Overrides the node border/badge color. |
 | `layerGlyphs` | Object mapping layer names → 2-char glyphs shown on nodes. |
@@ -195,7 +195,7 @@ The presentation controls how your dataset looks and feels — colors, inspector
 | `inspector.metaFields` | `meta.*` keys shown as label/value rows. |
 | `inspector.metaArrays` | `meta.*` keys shown as bullet lists. |
 | `inspector.metaChips` | `meta.*` keys rendered as tag chips (usually `["tags"]`). |
-| `inspector.metaLink` | `meta.*` key rendered as a clickable URL (e.g. `"url"`). |
+| `inspector.metaLink` | `meta.*` key rendered as a clickable URL (e.g. `"url"`). Only `http`, `https`, `mailto` and relative URLs become links; other schemes are dropped. |
 | `focusModes` | Toolbar filter presets. `filter.layers` filters by layer, `filter.ids` filters by node ID list. |
 | `stats` | Stat chips in the header. `"count": "visible"` shows current visible count. `filter` counts matching nodes. |
 

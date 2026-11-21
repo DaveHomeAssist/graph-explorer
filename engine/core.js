@@ -18,10 +18,24 @@ export function safeWriteJson(key, value) {
   } catch {}
 }
 
+const ESC_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+
+// Escapes for both text and quoted-attribute contexts. The previous
+// textContent/innerHTML round trip left quotes intact, so a value placed in
+// attr="${esc(v)}" could break out of the attribute.
 export function esc(str) {
-  const el = document.createElement('span');
-  el.textContent = String(str ?? '');
-  return el.innerHTML;
+  return String(str ?? '').replace(/[&<>"']/g, (ch) => ESC_MAP[ch]);
+}
+
+// Returns the URL only if it uses a safe scheme (http, https, mailto) or is
+// relative; otherwise null, so javascript:, data: and similar never reach href.
+export function safeUrl(value) {
+  const raw = String(value ?? '').trim();
+  if (!raw) return null;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(raw)) {
+    return /^(https?|mailto):/i.test(raw) ? raw : null;
+  }
+  return raw.startsWith('//') ? null : raw;
 }
 
 export function populateSelect(id, values) {

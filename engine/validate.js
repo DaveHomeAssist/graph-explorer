@@ -34,6 +34,7 @@ export function validateDataset(data) {
   const nodeIds = new Set();
   data.nodes.forEach((n, i) => {
     const prefix = `nodes[${i}]`;
+    if (!n || typeof n !== 'object' || Array.isArray(n)) { errors.push(`${prefix}: must be an object.`); return; }
     if (!n.id || typeof n.id !== 'string') { errors.push(`${prefix}: missing or invalid "id".`); return; }
     if (nodeIds.has(n.id)) errors.push(`${prefix}: duplicate id "${n.id}".`);
     nodeIds.add(n.id);
@@ -47,6 +48,7 @@ export function validateDataset(data) {
   const edgeKeys = new Set();
   data.edges.forEach((e, i) => {
     const prefix = `edges[${i}]`;
+    if (!e || typeof e !== 'object' || Array.isArray(e)) { errors.push(`${prefix}: must be an object.`); return; }
     if (!e.from || typeof e.from !== 'string') { errors.push(`${prefix}: missing or invalid "from".`); return; }
     if (!e.to   || typeof e.to   !== 'string') { errors.push(`${prefix}: missing or invalid "to".`); return; }
     if (!nodeIds.has(e.from)) errors.push(`${prefix}: "from" references unknown node "${e.from}".`);
@@ -60,7 +62,7 @@ export function validateDataset(data) {
 
   // --- Orphan check ---
   const connectedIds = new Set();
-  data.edges.forEach(e => { connectedIds.add(e.from); connectedIds.add(e.to); });
+  data.edges.forEach(e => { if (e && typeof e === 'object') { connectedIds.add(e.from); connectedIds.add(e.to); } });
   nodeIds.forEach(id => {
     if (!connectedIds.has(id)) warnings.push(`Node "${id}" has no edges (orphan).`);
   });
