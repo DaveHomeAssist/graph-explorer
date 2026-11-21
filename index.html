@@ -183,6 +183,8 @@
     .icon-btn:disabled:hover { color: var(--muted); background: var(--panel-2); border-color: var(--border); transform: none; }
 
     .main { display: grid; grid-template-columns: 1fr; gap: 14px; align-items: start; position: relative; }
+    /* The canvas always fills its row, including when an embedding layout turns .main into a flex row. */
+    .main > .canvas { align-self: stretch; }
 
     .canvas { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; position: relative; }
 
@@ -717,7 +719,7 @@
 
 <script type="module">
 import { validateDataset } from './engine/validate.js';
-import { MAP_STATE_KEY, safeReadJson, safeWriteJson, esc, populateSelect, getMapLabel, getDatasetPath, readMapBookmarks } from './engine/core.js';
+import { MAP_STATE_KEY, safeReadJson, safeWriteJson, esc, safeUrl, populateSelect, getMapLabel, getDatasetPath, readMapBookmarks } from './engine/core.js';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const SUPPORTED_SCHEMA_VERSIONS = [1];
@@ -929,8 +931,13 @@ function performRedo() {
 function writeMapBookmark() {
   if (!currentMapId) return;
   const bookmarks = readMapBookmarks();
-  bookmarks[currentMapId] = snapshotState();
+  bookmarks[currentMapId] = { ...snapshotState(), defaultsKey: presentationDefaultsKey() };
   safeWriteJson(MAP_STATE_KEY, bookmarks);
+}
+
+function presentationDefaultsKey() {
+  const d = presentation?.defaults || {};
+  return JSON.stringify([d.initialFocusMode || 'All', d.initialLayer || 'All', !!d.showHeatmap]);
 }
 
 function restoreMapBookmark(mapId) {
@@ -939,13 +946,18 @@ function restoreMapBookmark(mapId) {
   if (!entry) return false;
   const validLayers = new Set(['All', ...nodes.map(node => node.layer).filter(Boolean)]);
   const validFocusModes = new Set((presentation.focusModes || [{ id: 'All' }]).map(mode => mode.id));
+  // A bookmark saved under different presentation defaults keeps the reader's
+  // selection and search but not the old view, so an author's new
+  // initialFocusMode / initialLayer / showHeatmap takes effect.
+  const defaults = presentation.defaults || {};
+  const sameDefaults = entry.defaultsKey === presentationDefaultsKey();
   Object.assign(state, {
     search: typeof entry.search === 'string' ? entry.search : '',
-    layer: validLayers.has(entry.layer) ? entry.layer : 'All',
-    focus: validFocusModes.has(entry.focus) ? entry.focus : 'All',
+    layer: sameDefaults && validLayers.has(entry.layer) ? entry.layer : (defaults.initialLayer || 'All'),
+    focus: sameDefaults && validFocusModes.has(entry.focus) ? entry.focus : (defaults.initialFocusMode || 'All'),
     selectedId: nodeMap[entry.selectedId] ? entry.selectedId : (nodes[0]?.id || null),
     focusNode: nodeMap[entry.focusNode] ? entry.focusNode : null,
-    heatmap: !!entry.heatmap,
+    heatmap: sameDefaults ? !!entry.heatmap : !!defaults.showHeatmap,
     pathMode: !!entry.pathMode && !!nodeMap[entry.selectedId] && !!nodeMap[entry.pathTarget],
     pathTarget: nodeMap[entry.pathTarget] ? entry.pathTarget : null,
   });
@@ -996,6 +1008,12 @@ function updatePathHistorySelect() {
     select.appendChild(option);
   });
   select.value = '';
+}
+
+// Layout direction from presentation.defaults.rankdir (TB, BT, LR or RL).
+function graphRankdir() {
+  const dir = String(presentation?.defaults?.rankdir || 'TB').toUpperCase();
+  return ['TB', 'BT', 'LR', 'RL'].includes(dir) ? dir : 'TB';
 }
 
 // ── URL State Sync ───────────────────────────────────────────────────────────
@@ -1239,7 +1257,7 @@ function getPresentationPath(entry) {
 async function loadMapPack(mapOrId) {
   const entry = getMapEntry(mapOrId);
   if (!entry) {
-    showError('Map Load Failed', [`Unknown map "${esc(String(mapOrId || ''))}".`]);
+    showError('Map Load Failed', [`Unknown map "${String(mapOrId || '')}".`]);
     return false;
   }
 
@@ -1524,7 +1542,7 @@ function computeLayout(visibleIds) {
   }
 
   const g = new dagre.graphlib.Graph();
-  g.setGraph({ rankdir: 'TB', ranksep: 30, nodesep: 12, marginx: 12, marginy: 12 });
+  g.setGraph({ rankdir: graphRankdir(), ranksep: 30, nodesep: 12, marginx: 12, marginy: 12 });
   g.setDefaultEdgeLabel(() => ({}));
 
   visibleIds.forEach(id => g.setNode(id, { width: NW, height: NH }));
@@ -2063,15 +2081,16 @@ function renderDetail(visIds) {
 
   // External link
   let linkHtml = '';
-  if (metaLink && meta[metaLink.key]) {
-    linkHtml = `<a class="notion-link" href="${esc(meta[metaLink.key])}" target="_blank" rel="noopener">${esc(metaLink.icon || '↗')} ${esc(metaLink.label || 'Open')}</a>`;
+  const linkUrl = metaLink ? safeUrl(meta[metaLink.key]) : null;
+  if (metaLink && linkUrl) {
+    linkHtml = `<a class="notion-link" href="${esc(linkUrl)}" target="_blank" rel="noopener">${esc(metaLink.icon || '↗')} ${esc(metaLink.label || 'Open')}</a>`;
   }
 
   // Impact table
   const impactRows = [...nodes]
     .sort((a, b) => degree[b.id] - degree[a.id])
     .slice(0, 8)
-    .map(nd => `<tr><td style="color:${layers[nd.layer]||'#818cf8'}">${esc(nd.label.length>24?nd.label.slice(0,23)+'…':nd.label)}</td><td class="deg" style="color:${degree[nd.id]/maxDegree>0.6?'#ef4444':degree[nd.id]/maxDegree>0.35?'#f59e0b':'#38bdf8'}">${degree[nd.id]}</td></tr>`)
+    .map(nd => `<tr><td style="color:${esc(layers[nd.layer]||'#818cf8')}">${esc(nd.label.length>24?nd.label.slice(0,23)+'…':nd.label)}</td><td class="deg" style="color:${degree[nd.id]/maxDegree>0.6?'#ef4444':degree[nd.id]/maxDegree>0.35?'#f59e0b':'#38bdf8'}">${degree[nd.id]}</td></tr>`)
     .join('');
 
   panel.innerHTML = `
@@ -2376,7 +2395,7 @@ function renderThemeEditor() {
   // Layer colors
   html += '<div class="te-section"><div class="te-label">Layer Colors</div>';
   for (const [lyr, color] of Object.entries(layers)) {
-    html += '<div class="te-row"><input type="color" data-layer="' + esc(lyr) + '" class="te-color" value="' + color + '"><span style="font-size:11px">' + esc(lyr) + '</span></div>';
+    html += '<div class="te-row"><input type="color" data-layer="' + esc(lyr) + '" class="te-color" value="' + esc(/^#[0-9a-f]{6}$/i.test(String(color)) ? color : '#888888') + '"><span style="font-size:11px">' + esc(lyr) + '</span></div>';
   }
   html += '</div>';
 

@@ -2,6 +2,17 @@
 
 All notable changes to Graph Explorer, grouped by date.
 
+## 2026-11-20 — review fixes
+
+- **Escaping:** `esc()` now escapes `"` and `'` as well as `& < >`, so map-pack values can no longer break out of quoted attributes (legend, map selector, edge legend, inspector, theme editor).
+- **Links:** inspector links go through the new `safeUrl()`; `javascript:`, `data:` and other non-web schemes are dropped (index and issues).
+- **Theme editor:** layer colours are validated as `#rrggbb` and escaped before going into the colour inputs.
+- **Validator:** a `null` or non-object entry in `nodes` or `edges` is reported as a validation error instead of throwing.
+- **Unknown map:** the error no longer double-escapes the map id.
+- **Bookmarks:** a saved view is tied to the presentation defaults it was saved under; when an author changes `initialFocusMode`, `initialLayer` or `showHeatmap`, the new defaults apply and the reader's selection and search are kept.
+- **Layout:** the canvas always fills its row (`.main > .canvas { align-self: stretch }`), so embedding layouts no longer squash the map to a strip.
+- **Direction:** new `presentation.defaults.rankdir` (`TB`, `BT`, `LR`, `RL`) for left-to-right maps.
+
 ## 2026-07-06
 - Added explicit all-rights-reserved LICENSE.
 
